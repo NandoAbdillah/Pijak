@@ -101,38 +101,65 @@ export const CardSelector = ({ icon: Icon, title, desc, active, onClick }) => (
 );
 
 /** @param {{data: {typeColor: string, type: string, title: string, category: string, reward: string, deadline: string, beginnerFriendly?: boolean, level: string}}} props */
-export const OpportunityCard = ({ data }) => (
-  <div className="bg-white rounded-3xl p-5 border border-[#DDD6C8] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 group cursor-pointer flex flex-col h-full">
-    <div className="flex justify-between items-start mb-4">
-      <Badge className={data.typeColor}>{data.type}</Badge>
-      <button className="text-[#A8C3A0] hover:text-[#1F4D3A] transition-colors">
-        <Bookmark size={20} strokeWidth={1.5} />
-      </button>
-    </div>
+// Fungsi helper untuk menentukan warna tipe opportunity
+const getOpportunityTypeColor = (type) => {
+  const types = {
+    "Freelance": "bg-orange-100 text-orange-700",
+    "Volunteer": "bg-green-100 text-green-700",
+    "Kolaborasi": "bg-blue-100 text-blue-700",
+    "Skill Exchange": "bg-purple-100 text-purple-700",
+  };
+  return types[type] || "bg-gray-100 text-gray-700"; // Fallback default
+};
 
-    <h3 className="font-sora font-semibold text-[#1B1B1B] text-lg mb-1 leading-snug group-hover:text-[#1F4D3A] transition-colors">
-      {data.title}
-    </h3>
-    <p className="text-sm text-[#6E6E6E] mb-6 flex-grow">{data.category}</p>
+// ========================================================
+// OPPORTUNITY CARD COMPONENT
+// ========================================================
+export const OpportunityCard = ({ data, onClick }) => {
+  const typeColor = getOpportunityTypeColor(data.type);
+  
+  // Logic sederhana untuk Beginner Friendly karena di DB belum ada kolomnya
+  const isBeginnerFriendly = data.type === "Volunteer" || data.reward === "0" || data.reward?.toLowerCase() === "rp0";
 
-    <div className="flex flex-wrap items-center gap-4 text-xs text-[#1B1B1B] font-medium mb-4">
-      <div className="flex items-center gap-1.5">
-        <Wallet size={14} className="text-[#A8C3A0]" /> {data.reward}
+  return (
+    <div 
+      onClick={() => onClick(data.id)}
+      className="bg-white rounded-3xl p-5 border border-[#DDD6C8] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-300 group cursor-pointer flex flex-col h-full"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <Badge className={typeColor}>{data.type}</Badge>
+        <button className="text-[#A8C3A0] hover:text-[#1F4D3A] transition-colors">
+          <Bookmark size={20} strokeWidth={1.5} />
+        </button>
       </div>
-      <div className="flex items-center gap-1.5">
-        <Clock size={14} className="text-[#A8C3A0]" /> {data.deadline}
-      </div>
-    </div>
 
-    {data.beginnerFriendly ? (
-      <Badge className="bg-[#E7F0E9] text-[#1F4D3A] w-fit">
-        Beginner Friendly
-      </Badge>
-    ) : (
-      <Badge className="bg-blue-50 text-blue-700 w-fit">{data.level}</Badge>
-    )}
-  </div>
-);
+      <h3 className="font-sora font-semibold text-[#1B1B1B] text-lg mb-1 leading-snug group-hover:text-[#1F4D3A] transition-colors line-clamp-2">
+        {data.title}
+      </h3>
+      <p className="text-sm text-[#6E6E6E] mb-6 flex-grow">{data.category}</p>
+
+      <div className="flex flex-wrap items-center gap-4 text-xs text-[#1B1B1B] font-medium mb-4">
+        <div className="flex items-center gap-1.5">
+          <Wallet size={14} className="text-[#A8C3A0]" /> 
+          {data.reward === "0" || data.reward?.toLowerCase() === "rp0" ? "Tanpa Bayaran" : data.reward}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Clock size={14} className="text-[#A8C3A0]" /> {data.deadline}
+        </div>
+      </div>
+
+      {isBeginnerFriendly ? (
+        <Badge className="bg-[#E7F0E9] text-[#1F4D3A] w-fit">
+          Beginner Friendly
+        </Badge>
+      ) : (
+        <Badge className="bg-blue-50 text-blue-700 w-fit">
+          Intermediate
+        </Badge>
+      )}
+    </div>
+  );
+};
 
 /** @param {{data: {bg: string, color: string, icon: import('react').ElementType, title: string, desc: string}}} props */
 export const CategoryCard = ({ data }) => (
