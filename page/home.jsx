@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Bookmark,
@@ -130,6 +130,8 @@ const CATEGORIES = [
     color: "text-[#6E6E6E]",
   },
 ];
+
+// if (loading) return <div>Lagi ambil data dari C++...</div>;
 
 const HeroSection = () => (
   <FadeUp className="relative mt-8 mb-16 flex flex-col lg:flex-row items-center gap-10 lg:gap-4">
@@ -289,8 +291,64 @@ const FeatureHighlight = () => {
 };
 
 // src/components/home/opportunity-section.tsx
-const OpportunitySection = () => {
+
+
+// ========================================================
+// OPPORTUNITY SECTION COMPONENT
+// ========================================================
+export const OpportunitySection = ({ setCurrentPage, setSelectedOppId }) => {
+  const [opportunities, setOpportunities] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Semua");
+
+  const OPPORTUNITY_TABS = ["Semua", "Freelance", "Volunteer", "Kolaborasi", "Skill Exchange"];
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/opportunities"); // Sesuaikan route folder kamu
+        const json = await res.json();
+
+        if (json.ok) {
+          // json.data adalah array yang dikirim dari C++ via 'runPijakBackend'
+          setOpportunities(json.data);
+        }
+      } catch (e) {
+        console.error("Gagal ambil data:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  // Filter data secara otomatis saat activeTab berubah
+  const filteredData = useMemo(() => {
+    let data = opportunities;
+    if (activeTab !== "Semua") {
+      data = opportunities.filter((opp) => opp.type === activeTab);
+    }
+    // Batasi selalu 4 item saja di Home
+    return data.slice(0, 4); 
+  }, [activeTab, opportunities]);
+
+  // Fungsi handle saat kartu diklik
+  const handleCardClick = (id) => {
+    if (setSelectedOppId) setSelectedOppId(id); // Simpan ID ke global state / parent
+    console.log("Card clicked with ID:", id); // Debug log
+    if (setCurrentPage) setCurrentPage("detail"); // Pindah halaman
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-32 w-full">
+        <div className="flex flex-col items-center gap-3">
+           <div className="w-8 h-8 border-4 border-[#E7F0E9] border-t-[#1F4D3A] rounded-full animate-spin"></div>
+           <p className="text-sm font-medium text-[#6E6E6E]">Memuat peluang dari Pijak...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-16">
@@ -321,13 +379,21 @@ const OpportunitySection = () => {
         </div>
       </FadeUp>
 
-      <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
-        {OPPORTUNITIES.map((opp) => (
-          <StaggerItem key={opp.id}>
-            <OpportunityCard data={opp} />
-          </StaggerItem>
-        ))}
-      </StaggerContainer>
+      {/* RENDER DATA DARI BACKEND */}
+      {filteredData.length === 0 ? (
+        <div className="w-full text-center py-10 border border-dashed border-[#DDD6C8] rounded-2xl bg-white">
+          <p className="text-[#6E6E6E] font-medium">Belum ada peluang untuk tab ini.</p>
+        </div>
+      ) : (
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
+          {filteredData.map((opp) => (
+            <StaggerItem key={opp.id}>
+              {/* Data dilempar ke komponen Card yang sudah sesuai gaya aslinya */}
+              <OpportunityCard data={opp} onClick={handleCardClick} />
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      )}
     </div>
   );
 };
@@ -348,12 +414,12 @@ const PopularCategorySection = () => (
   </FadeUp>
 );
 
-export default function HomeMain() {
+export default function HomeMain( {setCurrentPage, setOppId} ) {
   return (
     <div className="max-w-[850px] mx-auto pb-10">
       <HeroSection />
       <FeatureHighlight />
-      <OpportunitySection />
+      <OpportunitySection setCurrentPage={setCurrentPage} setSelectedOppId={setOppId} />
       <PopularCategorySection />
     </div>
   );
