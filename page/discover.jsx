@@ -13,7 +13,6 @@ import {
   Filter,
   Hash,
   Check,
-  Badge,
   LayoutGrid,
   Briefcase,
   HeartHandshake,
@@ -26,10 +25,12 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/motion/anim";
-
 import { Button, OpportunityCard } from "@/components/ui/uis";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
+// =====================================================================
+// DATA STATIS (TETAP DIPERTAHANKAN)
+// =====================================================================
 const JELAJAH_TYPES = [
   {
     id: "semua",
@@ -63,64 +64,75 @@ const JELAJAH_TYPES = [
   },
 ];
 
-const OPPORTUNITIES = [
-  {
-    id: 1,
-    type: "Freelance",
-    typeColor: "bg-orange-100 text-orange-700",
-    title: "Desain Konten Instagram untuk UMKM Kopi",
-    category: "Desain",
-    reward: "Rp150.000",
-    deadline: "2 hari lagi",
-    beginnerFriendly: true,
-    level: "Beginner",
-  },
-  {
-    id: 2,
-    type: "Volunteer",
-    typeColor: "bg-green-100 text-green-700",
-    title: "Edukasi Anak Minggu (Volunteer Mengajar)",
-    category: "Pendidikan",
-    reward: "Sertifikat + Pengalaman",
-    deadline: "5 hari lagi",
-    beginnerFriendly: true,
-    level: "Beginner",
-  },
-  {
-    id: 3,
-    type: "Kolaborasi",
-    typeColor: "bg-blue-100 text-blue-700",
-    title: "Partner untuk Project Video Dokumenter",
-    category: "Konten Kreator",
-    reward: "Barter Skill",
-    deadline: "1 minggu lagi",
-    beginnerFriendly: false,
-    level: "Intermediate",
-  },
-  {
-    id: 4,
-    type: "Freelance",
-    typeColor: "bg-orange-100 text-orange-700",
-    title: "Input Data Penjualan (Excel)",
-    category: "Data Entry",
-    reward: "Rp100.000",
-    deadline: "2 hari lagi",
-    beginnerFriendly: true,
-    level: "Beginner",
-  },
-];
+// const TRENDING_TAGS = [
+//   { tag: "Lingkungan", count: "128 peluang aktif" },
+//   { tag: "Pendidikan", count: "96 peluang aktif" },
+//   { tag: "Desain", count: "85 peluang aktif" },
+// ];
 
-const TRENDING_TAGS = [
-  { tag: "Lingkungan", count: "128 peluang aktif" },
-  { tag: "Pendidikan", count: "96 peluang aktif" },
-  { tag: "Desain", count: "85 peluang aktif" },
-];
-
-/**
- * @param {{ setCurrentPage: (page: string) => void }} props
- */
-export const JelajahMain = ({ setCurrentPage }) => {
+// =====================================================================
+// MAIN JELAJAH COMPONENT
+// =====================================================================
+export const JelajahMain = ({ setCurrentPage, setSelectedOppId }) => {
   const [activeType, setActiveType] = useState("semua");
+  const [opportunities, setOpportunities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Ambil Data dari API
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/opportunities");
+      const json = await res.json();
+      if (json.ok) {
+        setOpportunities(json.data);
+      }
+    } catch (e) {
+      console.error("Gagal ambil data:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Logika Filter Tab Kategori
+  const filteredData = useMemo(() => {
+    if (activeType === "semua") return opportunities;
+
+    // Mapping ID tab ke penamaan tipe di C++
+    const typeMap = {
+      freelance: "Freelance",
+      volunteer: "Volunteer",
+      kolaborasi: "Kolaborasi",
+      skillexchange: "Skill Exchange",
+    };
+
+    return opportunities.filter((opp) => opp.type === typeMap[activeType]);
+  }, [activeType, opportunities]);
+
+  // Logika Eksekusi Sorting (Memanggil C++)
+  const handleSortBackend = async () => {
+    try {
+      setLoading(true);
+      await fetch("/api/opportunities", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sort" }),
+      });
+      // Setelah disortir di C++, ambil ulang datanya
+      await fetchData();
+    } catch (e) {
+      console.error("Gagal menyortir:", e);
+    }
+  };
+
+  const handleCardClick = (id) => {
+    if (setSelectedOppId) setSelectedOppId(id);
+    if (setCurrentPage) setCurrentPage("detail");
+  };
 
   return (
     <div className="max-w-[1000px] mx-auto space-y-10">
@@ -159,10 +171,7 @@ export const JelajahMain = ({ setCurrentPage }) => {
             return (
               <button
                 key={type.id}
-                onClick={() => {
-                  setActiveType(type.id);
-                  setCurrentPage("detail");
-                }}
+                onClick={() => setActiveType(type.id)} // DIBENARKAN: Jangan lempar ke detail di sini
                 className={`p-4 rounded-2xl text-left border transition-all duration-200 flex flex-col gap-3 ${
                   isActive
                     ? "bg-[#1F4D3A] text-white border-[#1F4D3A] shadow-md"
@@ -196,9 +205,18 @@ export const JelajahMain = ({ setCurrentPage }) => {
           (filter) => (
             <button
               key={filter}
-              className="flex items-center gap-2 bg-white border border-[#DDD6C8] px-4 py-2 rounded-full text-xs font-medium text-[#1B1B1B] hover:bg-[#F6F3EA]"
+              onClick={filter === "Urutkan" ? handleSortBackend : undefined} // TOMBOL URUTKAN AKTIF
+              className={`flex items-center gap-2 bg-white border border-[#DDD6C8] px-4 py-2 rounded-full text-xs font-medium text-[#1B1B1B] hover:bg-[#F6F3EA] ${filter === "Urutkan" ? "hover:border-[#5F8B6D] text-[#1F4D3A]" : ""}`}
             >
-              {filter} <ChevronDown size={14} className="text-[#6E6E6E]" />
+              {filter}
+              {filter === "Urutkan" ? (
+                <ArrowRightLeft
+                  size={14}
+                  className="text-[#5F8B6D] rotate-90"
+                />
+              ) : (
+                <ChevronDown size={14} className="text-[#6E6E6E]" />
+              )}
             </button>
           ),
         )}
@@ -207,14 +225,27 @@ export const JelajahMain = ({ setCurrentPage }) => {
         </button>
       </FadeUp>
 
-      {/* Grid Cards (with illustration placeholder) */}
-      <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-        {OPPORTUNITIES.map((opp) => (
-          <StaggerItem key={opp.id}>
-            <OpportunityCard data={opp} />
-          </StaggerItem>
-        ))}
-      </StaggerContainer>
+      {/* Grid Cards (Data from Backend) */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20 w-full">
+          <div className="w-8 h-8 border-4 border-[#E7F0E9] border-t-[#1F4D3A] rounded-full animate-spin"></div>
+        </div>
+      ) : filteredData.length === 0 ? (
+        <div className="w-full text-center py-20 border border-dashed border-[#DDD6C8] rounded-2xl bg-white">
+          <p className="text-[#6E6E6E] font-medium">
+            Belum ada peluang di kategori ini.
+          </p>
+        </div>
+      ) : (
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+          {filteredData.map((opp) => (
+            <StaggerItem key={opp.id}>
+              {/* Data dikirim ke OpportunityCard (kode yang kita buat tadi) */}
+              <OpportunityCard data={opp} onClick={handleCardClick} />
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      )}
 
       {/* Bottom Banner */}
       <FadeUp
@@ -257,135 +288,293 @@ export const JelajahMain = ({ setCurrentPage }) => {
   );
 };
 
-export const JelajahRightSidebar = () => (
-  <aside className="w-[320px] h-screen sticky top-0 bg-[#FCFBF8] border-l border-[#DDD6C8] flex flex-col py-8 px-6 z-20 flex-shrink-0 overflow-y-auto hide-scrollbar">
-    {/* Filter Cepat */}
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
-          Filter Cepat
-        </h3>
-        <button className="text-[10px] text-[#6E6E6E] font-medium hover:text-[#1B1B1B]">
-          Reset
-        </button>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {[
-          "Beginner Friendly",
-          "Online",
-          "Surabaya",
-          "Berbayar",
-          "Hari ini",
-          "Akhir Pekan",
-        ].map((tag, i) => (
-          <Badge
-            key={i}
-            className={`cursor-pointer ${i === 0 ? "bg-[#E7F0E9] text-[#1F4D3A] border border-[#A8C3A0]" : "bg-white border border-[#DDD6C8] text-[#6E6E6E] hover:bg-[#F6F3EA]"}`}
-          >
-            {tag}
-          </Badge>
-        ))}
-      </div>
-    </div>
+// =====================================================================
+// RIGHT SIDEBAR COMPONENT (REKOMENDASI TREE/GRAPH LOGIC)
+// =====================================================================
+const TRENDING_TAGS = [
+  { tag: "Lingkungan", count: "128 peluang aktif" },
+  { tag: "Pendidikan", count: "96 peluang aktif" },
+  { tag: "Desain", count: "85 peluang aktif" },
+];
 
-    {/* CTA Green Box */}
-    <div className="bg-[#1F4D3A] rounded-2xl p-5 text-white mb-8 relative overflow-hidden shadow-sm">
-      <div className="relative z-10">
-        <h3 className="font-sora font-semibold text-sm mb-2">
-          Belum menemukan
-          <br />
-          yang cocok?
-        </h3>
-        <p className="text-[10px] text-white/80 mb-4 leading-relaxed max-w-[85%]">
-          Buat peluangmu sendiri dan temukan talenta terbaik untuk
-          mengerjakannya!
-        </p>
-        <button className="bg-white text-[#1F4D3A] text-xs font-semibold py-2 px-4 rounded-full hover:bg-[#E7DCCB] transition-colors">
-          Buat Peluang
-        </button>
-      </div>
-      <Lightbulb className="absolute -bottom-2 -right-4 w-20 h-20 text-[#5F8B6D] opacity-40 stroke-1" />
-    </div>
+export const JelajahRightSidebar = ({
+  setCurrentPage,
+  setSelectedOppId,
+}) => {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    {/* Rekomendasi untukmu */}
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
-          Rekomendasi untukmu
-        </h3>
-        <button className="text-[10px] text-[#6E6E6E] hover:text-[#1B1B1B]">
-          Lihat semua
-        </button>
-      </div>
-      <div className="space-y-3">
-        {[
-          {
-            title: "Desain Feed Instagram untuk Event",
-            cat: "Desain",
-            reward: "Rp120.000",
-            icon: Palette,
-            bg: "bg-orange-100",
-          },
-          {
-            title: "Relawan Edukasi Lingkungan untuk Anak Sekolah",
-            cat: "Volunteer",
-            reward: "Sertifikat",
-            icon: Trees,
-            bg: "bg-green-100",
-          },
-          {
-            title: "Editor Video Pendek (YouTube Shorts)",
-            cat: "Video",
-            reward: "Rp200.000",
-            icon: Clapperboard,
-            bg: "bg-purple-100",
-          },
-        ].map((item, i) => (
-          <div key={i} className="flex gap-3 group cursor-pointer">
-            <div
-              className={`w-10 h-10 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0 text-[#1B1B1B]`}
+  // =========================================================
+  // FETCH DATA
+  // =========================================================
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch("/api/opportunities");
+
+        if (!res.ok) {
+          throw new Error("Gagal fetch API");
+        }
+
+        const json = await res.json();
+
+        // Pastikan array
+        if (json?.ok && Array.isArray(json?.data)) {
+          setRecommendations(json.data.slice(0, 3));
+        } else {
+          setRecommendations([]);
+        }
+      } catch (err) {
+        console.error("Sidebar Error:", err);
+        setRecommendations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, []);
+
+  // =========================================================
+  // HELPERS
+  // =========================================================
+  const getIconForItem = (item) => {
+    const type = String(item?.type || "").toLowerCase();
+    const category = String(item?.category || "").toLowerCase();
+
+    if (category.includes("desain")) return Palette;
+
+    if (
+      category.includes("video") ||
+      category.includes("creator") ||
+      category.includes("kreator")
+    ) {
+      return Clapperboard;
+    }
+
+    if (
+      category.includes("lingkungan") ||
+      category.includes("pendidikan") ||
+      type.includes("volunteer")
+    ) {
+      return Trees;
+    }
+
+    if (type.includes("freelance")) {
+      return Briefcase;
+    }
+
+    return Briefcase;
+  };
+
+  const getColorClass = (item) => {
+    const type = String(item?.type || "").toLowerCase();
+    const category = String(item?.category || "").toLowerCase();
+
+    if (category.includes("desain")) {
+      return "bg-orange-100 text-orange-700";
+    }
+
+    if (
+      category.includes("video") ||
+      category.includes("creator") ||
+      category.includes("kreator")
+    ) {
+      return "bg-purple-100 text-purple-700";
+    }
+
+    if (
+      category.includes("lingkungan") ||
+      category.includes("pendidikan") ||
+      type.includes("volunteer")
+    ) {
+      return "bg-green-100 text-green-700";
+    }
+
+    return "bg-blue-100 text-blue-700";
+  };
+
+  const formatReward = (reward) => {
+    const value = String(reward || "").trim().toLowerCase();
+
+    if (
+      value === "" ||
+      value === "0" ||
+      value === "rp0"
+    ) {
+      return "Tanpa Bayaran";
+    }
+
+    return reward;
+  };
+
+  // =========================================================
+  // RENDER
+  // =========================================================
+  return (
+    <aside className="w-[320px] min-w-[320px] h-screen sticky top-0 bg-[#FCFBF8] border-l border-[#DDD6C8] flex flex-col px-6 py-8 overflow-y-auto">
+
+      {/* FILTER */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
+            Filter Cepat
+          </h3>
+
+          <button className="text-[10px] text-[#6E6E6E] hover:text-black">
+            Reset
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            "Beginner",
+            "Online",
+            "Surabaya",
+            "Freelance",
+            "Volunteer",
+          ].map((tag) => (
+            <button
+              key={tag}
+              className="px-3 py-1.5 rounded-lg border border-[#DDD6C8] bg-white text-[10px] text-[#6E6E6E] hover:bg-[#F6F3EA] transition"
             >
-              <item.icon size={18} strokeWidth={1.5} />
-            </div>
-            <div className="flex-1 pb-3 border-b border-[#DDD6C8] group-last:border-0">
-              <h4 className="text-[11px] font-semibold text-[#1B1B1B] leading-snug group-hover:text-[#1F4D3A] mb-1">
-                {item.title}
-              </h4>
-              <div className="flex justify-between items-center">
-                <span className="text-[9px] text-[#6E6E6E] font-medium">
-                  {item.cat}
-                </span>
-                <span className="text-[9px] font-semibold text-[#1B1B1B]">
-                  {item.reward}
-                </span>
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="bg-[#1F4D3A] rounded-2xl p-5 text-white mb-8 relative overflow-hidden">
+        <div className="relative z-10">
+          <h3 className="font-sora font-semibold text-sm leading-relaxed mb-2">
+            Belum menemukan
+            <br />
+            peluang yang cocok?
+          </h3>
+
+          <p className="text-[11px] text-white/80 leading-relaxed mb-4">
+            Buat peluangmu sendiri dan temukan talenta terbaik.
+          </p>
+
+          <button className="bg-white text-[#1F4D3A] px-4 py-2 rounded-full text-xs font-semibold hover:bg-[#E7DCCB] transition">
+            Buat Peluang
+          </button>
+        </div>
+
+        <Lightbulb className="absolute right-[-10px] bottom-[-10px] w-20 h-20 opacity-20" />
+      </div>
+
+      {/* REKOMENDASI */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
+            Rekomendasi Untukmu
+          </h3>
+
+          <button className="text-[10px] text-[#6E6E6E] hover:text-black">
+            Lihat Semua
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="w-7 h-7 border-4 border-[#E7F0E9] border-t-[#1F4D3A] rounded-full animate-spin" />
+          </div>
+        ) : recommendations.length === 0 ? (
+          <div className="text-xs text-[#6E6E6E] bg-white border border-dashed border-[#DDD6C8] rounded-xl p-4 text-center">
+            Belum ada rekomendasi.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recommendations.map((item) => {
+              const Icon = getIconForItem(item);
+              const colorClass = getColorClass(item);
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    if (setSelectedOppId) {
+                      setSelectedOppId(item.id);
+                    }
+
+                    if (setCurrentPage) {
+                      setCurrentPage("detail");
+                    }
+                  }}
+                  className="flex gap-3 cursor-pointer group"
+                >
+                  {/* ICON */}
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}
+                  >
+                    <Icon size={18} strokeWidth={1.8} />
+                  </div>
+
+                  {/* CONTENT */}
+                  <div className="flex-1 border-b border-[#EEE7D9] pb-3">
+                    <h4 className="text-[12px] font-semibold text-[#1B1B1B] leading-snug group-hover:text-[#1F4D3A] transition line-clamp-2">
+                      {item.title || "Tanpa Judul"}
+                    </h4>
+
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] text-[#6E6E6E]">
+                        {item.type || "Opportunity"}
+                      </span>
+
+                      <span className="text-[10px] font-semibold text-[#1F4D3A]">
+                        {formatReward(item.reward)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* TRENDING */}
+      <div className="mt-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
+            Trending
+          </h3>
+
+          <TrendingUp size={16} className="text-[#6E6E6E]" />
+        </div>
+
+        <div className="space-y-4">
+          {[
+            "Lingkungan",
+            "Desain",
+            "Pendidikan",
+          ].map((tag) => (
+            <div
+              key={tag}
+              className="flex items-start gap-3 group cursor-pointer"
+            >
+              <Hash
+                size={14}
+                className="text-[#A8C3A0] mt-0.5"
+              />
+
+              <div>
+                <h4 className="text-xs font-semibold text-[#1B1B1B] group-hover:text-[#1F4D3A]">
+                  {tag}
+                </h4>
+
+                <p className="text-[10px] text-[#6E6E6E]">
+                  Peluang aktif tersedia
+                </p>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-
-    {/* Trending Sekarang */}
-    <div className="mt-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-sora font-bold text-sm text-[#1B1B1B]">
-          Trending Sekarang
-        </h3>
-        <TrendingUp size={16} className="text-[#6E6E6E]" />
-      </div>
-      <div className="space-y-4">
-        {TRENDING_TAGS.map((item, i) => (
-          <div key={i} className="flex gap-3 cursor-pointer group">
-            <Hash size={14} className="text-[#A8C3A0] mt-0.5" />
-            <div>
-              <h4 className="text-xs font-semibold text-[#1B1B1B] group-hover:text-[#1F4D3A] mb-0.5">
-                {item.tag}
-              </h4>
-              <p className="text-[10px] text-[#6E6E6E]">{item.count}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </aside>
-);
+    </aside>
+  );
+};
