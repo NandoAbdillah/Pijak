@@ -40,6 +40,7 @@ import {
 } from "@/page/send-proposal";
 import { ProfilMain, ProfilRightSidebar } from "@/page/profile";
 import { WorkroomMain, WorkroomRightSidebar } from "@/page/workroom";
+import { AuthScreen } from "@/page/auth";
 
 // ============================================================================
 // --- GLOBAL STYLES & FONTS (src/app/globals.css equivalent) ---
@@ -79,209 +80,40 @@ const injectStyles = () => {
   document.head.appendChild(style);
 };
 
-// ============================================================================
-// --- LIB & UTILS (src/lib/constants.ts) ---
-// ============================================================================
-const NAV_ITEMS = [
-  { id: "beranda", icon: Home, label: "Beranda" },
-  { id: "jelajah", icon: Compass, label: "Jelajah" },
-  { id: "buat", icon: PlusSquare, label: "Buat Peluang" },
-  { id: "aktivitas", icon: Activity, label: "Aktivitas" },
-  { id: "pesan", icon: MessageSquare, label: "Pesan" },
-  { id: "notifikasi", icon: Bell, label: "Notifikasi" },
-  { id: "profil", icon: User, label: "Profil" },
-];
 
-const OPPORTUNITY_TABS = [
-  "Semua",
-  "Freelance",
-  "Volunteer",
-  "Kolaborasi",
-  "Skill Exchange",
-];
-
-const JELAJAH_TYPES = [
-  {
-    id: "semua",
-    label: "Semua",
-    desc: "Lihat semua jenis peluang",
-    icon: LayoutGrid,
-  },
-  {
-    id: "freelance",
-    label: "Freelance",
-    desc: "Pekerjaan berbayar berbasis proyek",
-    icon: Briefcase,
-  },
-  {
-    id: "volunteer",
-    label: "Volunteer",
-    desc: "Kegiatan sukarela berdampak",
-    icon: HeartHandshake,
-  },
-  {
-    id: "kolaborasi",
-    label: "Kolaborasi",
-    desc: "Kerja sama & project bareng",
-    icon: Users,
-  },
-  {
-    id: "skillexchange",
-    label: "Skill Exchange",
-    desc: "Tukar skill dan pengalaman",
-    icon: ArrowRightLeft,
-  },
-];
-
-const OPPORTUNITIES = [
-  {
-    id: 1,
-    type: "Freelance",
-    typeColor: "bg-orange-100 text-orange-700",
-    title: "Desain Konten Instagram untuk UMKM Kopi",
-    category: "Desain",
-    reward: "Rp150.000",
-    deadline: "2 hari lagi",
-    beginnerFriendly: true,
-  },
-  {
-    id: 2,
-    type: "Volunteer",
-    typeColor: "bg-green-100 text-green-700",
-    title: "Edukasi Anak Minggu (Volunteer Mengajar)",
-    category: "Pendidikan",
-    reward: "Sertifikat + Pengalaman",
-    deadline: "5 hari lagi",
-    beginnerFriendly: true,
-  },
-  {
-    id: 3,
-    type: "Kolaborasi",
-    typeColor: "bg-blue-100 text-blue-700",
-    title: "Partner untuk Project Video Dokumenter",
-    category: "Konten Kreator",
-    reward: "Barter Skill",
-    deadline: "1 minggu lagi",
-    beginnerFriendly: false,
-    level: "Intermediate",
-  },
-  {
-    id: 4,
-    type: "Freelance",
-    typeColor: "bg-orange-100 text-orange-700",
-    title: "Input Data Penjualan (Excel)",
-    category: "Data Entry",
-    reward: "Rp100.000",
-    deadline: "2 hari lagi",
-    beginnerFriendly: true,
-  },
-];
-
-const CATEGORIES = [
-  {
-    icon: Palette,
-    title: "Desain",
-    desc: "Ekspresikan idemu",
-    bg: "bg-orange-50",
-    color: "text-orange-600",
-  },
-  {
-    icon: TrendingUp,
-    title: "Marketing",
-    desc: "Bantu brand tumbuh",
-    bg: "bg-yellow-50",
-    color: "text-yellow-600",
-  },
-  {
-    icon: PenLine,
-    title: "Penulisan",
-    desc: "Kata yang menggerakkan",
-    bg: "bg-red-50",
-    color: "text-red-600",
-  },
-  {
-    icon: BarChart3,
-    title: "Data",
-    desc: "Ubah data jadi keputusan",
-    bg: "bg-blue-50",
-    color: "text-blue-600",
-  },
-  {
-    icon: Clapperboard,
-    title: "Video",
-    desc: "Ceritakan lewat visual",
-    bg: "bg-purple-50",
-    color: "text-purple-600",
-  },
-  {
-    icon: Trees,
-    title: "Lingkungan",
-    desc: "Aksi kecil untuk bumi",
-    bg: "bg-green-50",
-    color: "text-green-600",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Lainnya",
-    desc: "Masih banyak pijakan lainnya",
-    bg: "bg-[#F6F3EA]",
-    color: "text-[#6E6E6E]",
-  },
-];
-
-const RECENT_ACTIVITIES = [
-  {
-    title: "Desain Logo untuk UMKM",
-    status: "Sedang Dikerjakan",
-    statusColor: "text-orange-600",
-  },
-  {
-    title: "Relawan Bersih Pantai",
-    status: "Selesai",
-    statusColor: "text-green-600",
-  },
-  {
-    title: "Edit Video Promosi",
-    status: "Menunggu Review",
-    statusColor: "text-purple-600",
-  },
-];
-
-const TRENDING_TAGS = [
-  { tag: "Lingkungan", count: "128 peluang aktif" },
-  { tag: "Pendidikan", count: "96 peluang aktif" },
-  { tag: "Desain", count: "85 peluang aktif" },
-];
-
-// Icon Placeholder component used internally
-// const FolderHeart = (props) => (
-//   <svg
-//     xmlns="http://www.w3.org/2000/svg"
-//     width={props.size || 24}
-//     height={props.size || 24}
-//     viewBox="0 0 24 24"
-//     fill="none"
-//     stroke="currentColor"
-//     strokeWidth={props.strokeWidth || 2}
-//     strokeLinecap="round"
-//     strokeLinejoin="round"
-//     {...props}
-//   >
-//     <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-//     <path d="M12 10l-1.5 1.5a2.12 2.12 0 0 0 0 3a2.12 2.12 0 0 0 3 0l-1.5-1.5Z" />
-//   </svg>
-// );
-
-// ============================================================================
-// --- MAIN APP (src/app/page.tsx) ---
-// ============================================================================
+// MAIN APP
 export default function App() {
-  const [currentPage, setCurrentPage] = useState("beranda"); // State to handle navigation
+  const [currentPage, setCurrentPage] = useState("auth"); // State to handle navigation
   const [opportunityType, setOpportunityType] = useState("Freelance");
+  const [selectedOppId, setSelectedOppId] = useState("O01"); 
+  const [opportunityData, setOpportunityData] = useState(null);
+  const [globaluser, setGlobalUser] = useState(null);
 
   useEffect(() => {
     injectStyles();
   }, []);
+
+  useEffect(() => {
+    // Cek localStorage untuk status login
+    const storedUser = localStorage.getItem("pijakUser");
+    if (storedUser) {
+      setGlobalUser(JSON.parse(storedUser));
+      setCurrentPage("beranda"); 
+    }
+  }, []);
+
+  useEffect(() => {
+    if (globaluser) {
+      localStorage.setItem("pijakUser", JSON.stringify(globaluser));
+    } else {
+      localStorage.removeItem("pijakUser");
+    }
+  }, [globaluser]);
+
+  // Jika di halaman Auth, JANGAN tampilkan sidebar dan topbar
+  if (currentPage === 'auth') {
+    return <AuthScreen setCurrentPage={setCurrentPage} setGlobalUser={setGlobalUser} />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#F6F3EA] overflow-hidden text-[#1B1B1B] font-inter">
@@ -306,29 +138,21 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               {currentPage === "beranda" ? (
-                <HomeMain />
+                <HomeMain setCurrentPage={setCurrentPage} setOppId={setSelectedOppId} />
               ) : currentPage === "jelajah" ? (
-                <JelajahMain setCurrentPage={setCurrentPage} />
+                <JelajahMain setCurrentPage={setCurrentPage} setSelectedOppId={setSelectedOppId} />
               ) : currentPage === "buat" ? (
                 <BuatPeluangMain />
               ) : currentPage === "aktivitas" ? (
                 <AktivitasMain setCurrentPage={setCurrentPage} />
               ) : currentPage === "detail" ? (
-                <DetailPeluangMain setCurrentPage={setCurrentPage} />
+                <DetailPeluangMain setCurrentPage={setCurrentPage} selectedOppId={selectedOppId} />
               ) : currentPage === "proposal" ? (
                 <KirimProposalMain
                   setCurrentPage={setCurrentPage}
-                  opportunityData={{
-                    title: "Desain Konten Media Sosial untuk Kopi Nusantara",
-                    organizer: "Kopi Nusantara",
-                    loc: "Online",
-                    type: "Freelance",
-                    badgeColor: "bg-[#E7F0E9] text-[#1F4D3A]",
-                    deadline: "30 Mei 2024",
-                    level: "Menengah",
-                    reward: "Rp500.000 - Rp750.000",
-                  }}
-                  setOpportunityData={setCurrentPage}
+                  opportunityData={opportunityData}
+                  setOpportunityData={setOpportunityData}
+                  currentUserId={globaluser ? globaluser.id : null}
                 />
               ) : currentPage === "profil" ? (
                 <ProfilMain />
@@ -364,7 +188,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <JelajahRightSidebar />
+            <JelajahRightSidebar setCurrentPage={setCurrentPage} setSelectedOppId={setSelectedOppId} />
           </motion.div>
         ) : currentPage === "buat" ? (
           <motion.div
@@ -384,7 +208,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <AktivitasRightSidebar />
+            <AktivitasRightSidebar />   
           </motion.div>
         ) : currentPage === "detail" ? (
           <motion.div
@@ -394,7 +218,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <DetailPeluangRightSidebar setCurrentPage={setCurrentPage} />
+            <DetailPeluangRightSidebar setCurrentPage={setCurrentPage} selectedOppId={selectedOppId} setOpportunityData={setOpportunityData} />
           </motion.div>
         ) : currentPage === "proposal" ? (
           <motion.div
