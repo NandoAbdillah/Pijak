@@ -27,6 +27,7 @@ import { JelajahMain, JelajahRightSidebar } from "@/page/discover";
 import { LeftSidebar, RightSidebar, Topbar } from "@/components/ui/component";
 import {
   BuatPeluangMain,
+  BuatPeluangPage,
   BuatPeluangRightSidebar,
 } from "@/page/create-opportunity";
 import { AktivitasMain, AktivitasRightSidebar } from "@/page/activity";
@@ -80,14 +81,23 @@ const injectStyles = () => {
   document.head.appendChild(style);
 };
 
-
 // MAIN APP
 export default function App() {
   const [currentPage, setCurrentPage] = useState("auth"); // State to handle navigation
   const [opportunityType, setOpportunityType] = useState("Freelance");
-  const [selectedOppId, setSelectedOppId] = useState("O01"); 
+  const [selectedOppId, setSelectedOppId] = useState("O01");
   const [opportunityData, setOpportunityData] = useState(null);
+  const [createOppData, setCreateOppData] = useState({});
   const [globaluser, setGlobalUser] = useState(null);
+
+  const [activityData, setActivityData] = useState([]);
+  const [activityCounts, setActivityCounts] = useState({
+    berlangsung: 0,
+    menunggu: 0,
+    selesai: 0,
+    dibatalkan: 0,
+    semua: 0,
+  });
 
   useEffect(() => {
     injectStyles();
@@ -98,7 +108,7 @@ export default function App() {
     const storedUser = localStorage.getItem("pijakUser");
     if (storedUser) {
       setGlobalUser(JSON.parse(storedUser));
-      setCurrentPage("beranda"); 
+      setCurrentPage("beranda");
     }
   }, []);
 
@@ -111,8 +121,13 @@ export default function App() {
   }, [globaluser]);
 
   // Jika di halaman Auth, JANGAN tampilkan sidebar dan topbar
-  if (currentPage === 'auth') {
-    return <AuthScreen setCurrentPage={setCurrentPage} setGlobalUser={setGlobalUser} />;
+  if (currentPage === "auth") {
+    return (
+      <AuthScreen
+        setCurrentPage={setCurrentPage}
+        setGlobalUser={setGlobalUser}
+      />
+    );
   }
 
   return (
@@ -138,15 +153,32 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               {currentPage === "beranda" ? (
-                <HomeMain setCurrentPage={setCurrentPage} setOppId={setSelectedOppId} />
+                <HomeMain
+                  setCurrentPage={setCurrentPage}
+                  setOppId={setSelectedOppId}
+                />
               ) : currentPage === "jelajah" ? (
-                <JelajahMain setCurrentPage={setCurrentPage} setSelectedOppId={setSelectedOppId} />
+                <JelajahMain
+                  setCurrentPage={setCurrentPage}
+                  setSelectedOppId={setSelectedOppId}
+                />
               ) : currentPage === "buat" ? (
-                <BuatPeluangMain />
+                <BuatPeluangPage
+                  setCurrentPage={setCurrentPage}
+                  currentUserId={globaluser ? globaluser.id : null}
+                  setCreateOppData={setCreateOppData}
+                />
               ) : currentPage === "aktivitas" ? (
-                <AktivitasMain setCurrentPage={setCurrentPage} />
+                <AktivitasMain
+                  setCurrentPage={setCurrentPage}
+                  setActivitiesData={setActivityData}
+                  setActivityCounts={setActivityCounts}
+                />
               ) : currentPage === "detail" ? (
-                <DetailPeluangMain setCurrentPage={setCurrentPage} selectedOppId={selectedOppId} />
+                <DetailPeluangMain
+                  setCurrentPage={setCurrentPage}
+                  selectedOppId={selectedOppId}
+                />
               ) : currentPage === "proposal" ? (
                 <KirimProposalMain
                   setCurrentPage={setCurrentPage}
@@ -188,7 +220,10 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <JelajahRightSidebar setCurrentPage={setCurrentPage} setSelectedOppId={setSelectedOppId} />
+            <JelajahRightSidebar
+              setCurrentPage={setCurrentPage}
+              setSelectedOppId={setSelectedOppId}
+            />
           </motion.div>
         ) : currentPage === "buat" ? (
           <motion.div
@@ -198,7 +233,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <BuatPeluangRightSidebar />
+            <BuatPeluangRightSidebar opportunityData={createOppData} />
           </motion.div>
         ) : currentPage === "aktivitas" ? (
           <motion.div
@@ -208,7 +243,10 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <AktivitasRightSidebar />   
+            <AktivitasRightSidebar
+              activities={activityData}
+              counts={activityCounts}
+            />
           </motion.div>
         ) : currentPage === "detail" ? (
           <motion.div
@@ -218,7 +256,11 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <DetailPeluangRightSidebar setCurrentPage={setCurrentPage} selectedOppId={selectedOppId} setOpportunityData={setOpportunityData} />
+            <DetailPeluangRightSidebar
+              setCurrentPage={setCurrentPage}
+              selectedOppId={selectedOppId}
+              setOpportunityData={setOpportunityData}
+            />
           </motion.div>
         ) : currentPage === "proposal" ? (
           <motion.div
@@ -228,22 +270,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <KirimProposalRightSidebar
-              opportunityData={
-                currentPage === "proposal"
-                  ? {
-                      title: "Desain Konten Media Sosial untuk Kopi Nusantara",
-                      organizer: "Kopi Nusantara",
-                      loc: "Online",
-                      type: "Freelance",
-                      badgeColor: "bg-[#E7F0E9] text-[#1F4D3A]",
-                      deadline: "30 Mei 2024",
-                      level: "Menengah",
-                      reward: "Rp500.000 - Rp750.000",
-                    }
-                  : undefined
-              }
-            />
+            <KirimProposalRightSidebar opportunityData={opportunityData} />
           </motion.div>
         ) : currentPage === "profil" ? (
           <ProfilRightSidebar />
