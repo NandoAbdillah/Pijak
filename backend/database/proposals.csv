@@ -1,2 +1,4 @@
 id,opportunity_id,applicant_id,cover_letter,portfolio_url,status,created_at
-P01,O01,U04,Peran: desainer | Perkenalan: Culpa eiusmod eos c | Kenapa cocok: Rem sit eos dolor r | Pendekatan: Ad officiis aliqua | Pesan tambahan: Dolore voluptatum au,Ut eu voluptas venia,Menunggu,2026-05-23 22:35:32
+P01,O01,U04,"Saya jago desain bang","http://portfolio.local/u04","Diterima","2026-05-24 16:45:17"
+P02,O02,U04,"Update cover letter","http://portfolio.local/u04","Ditinjau","2026-05-24 16:45:17"
+P03,O04,U03,"Saya siap bantu","http://portfolio.local/u03","Ditolak","2026-05-24 16:45:17"

@@ -1,2 +1,4 @@
-text
-Proposal P01 diterima, workroom dibuat.
+user_id,text,created_at
+U03,"Task T01 selesai.","2026-05-24 16:45:17"
+U02,"Proposal P03 ditolak.","2026-05-24 16:45:17"
+U02,"Proposal P01 diterima, workroom dibuat.","2026-05-24 16:45:17"
