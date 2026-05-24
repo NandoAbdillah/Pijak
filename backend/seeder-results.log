@@ -1,0 +1,422 @@
+[2026-05-24 16:45:16] health => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Health check success.
+{"ok":true,"service":"pijak-backend","mode":"local-csv"}
+
+---
+[2026-05-24 16:45:16] register U01 Raka => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] users.csv belum ada.
+{"ok":true,"data":{"id":"U01","name":"Raka Mahendra","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] register U02 Ayu => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U02","name":"Ayu Lestari","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] register U03 Jonan => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U03","name":"Jonan","role_title":"Programmer Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] register U04 Nando => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U04","name":"Nando","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] register duplicate email => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":false,"error":"Email sudah terdaftar! Gunakan email lain."}
+
+---
+[2026-05-24 16:45:16] register missing email and phone => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":false,"error":"Wajib isi email atau nomor telepon!"}
+
+---
+[2026-05-24 16:45:16] list-users => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":[{"id":"U01","name":"Raka Mahendra","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"},{"id":"U02","name":"Ayu Lestari","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"},{"id":"U03","name":"Jonan","role_title":"Programmer Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"},{"id":"U04","name":"Nando","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}]}
+
+---
+[2026-05-24 16:45:16] get-user U02 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U02","name":"Ayu Lestari","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] update-user U03 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+[SUCCESS] User berhasil diupdate.
+{"ok":true,"data":{"id":"U03","name":"Jonan Update","role_title":"Programmer Muda","level":2,"xp":50,"skills":"C++","stats_hours":10,"stats_co2":3,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] delete-user temp U99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+[SUCCESS] User berhasil ditambahkan.
+{"ok":true,"data":{"id":"U99","name":"Temp User","role_title":"Tester","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] delete-user U99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"message":"User berhasil dihapus","id":"U99"}
+[SUCCESS] User berhasil dihapus.
+
+---
+[2026-05-24 16:45:16] login success => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U01","name":"Raka Mahendra","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:16] login wrong password => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":false,"error":"Password salah!"}
+
+---
+[2026-05-24 16:45:16] forgot-password request => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"message":"Kode OTP telah dikirim ke raka@pijak.com","dummy_otp":"123456"}
+
+---
+[2026-05-24 16:45:16] forgot-password wrong otp => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":false,"error":"Kode OTP yang dimasukkan salah!"}
+
+---
+[2026-05-24 16:45:16] forgot-password reset success => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"message":"Password berhasil direset! Silakan login dengan password baru."}
+
+---
+[2026-05-24 16:45:17] list-opportunities => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] opportunities.csv belum ada.
+{"ok":true,"data":[]}
+
+---
+[2026-05-24 16:45:17] add-opportunity O01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] opportunities.csv belum ada.
+[SUCCESS] Opportunity berhasil ditambahkan.
+{"ok":true,"data":{"id":"O01","creator_id":"U01","title":"Desain Logo","type":"Freelance","category":"","location":"","reward":"Rp500000","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-opportunity O02 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] Opportunity berhasil ditambahkan.
+{"ok":true,"data":{"id":"O02","creator_id":"U02","title":"Bikin Web Desa","type":"Freelance","category":"","location":"","reward":"Rp1500000","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-opportunity O03 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] Opportunity berhasil ditambahkan.
+{"ok":true,"data":{"id":"O03","creator_id":"U02","title":"Bantu Ngajar","type":"Volunteer","category":"","location":"","reward":"Rp0","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-opportunity O04 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] Opportunity berhasil ditambahkan.
+{"ok":true,"data":{"id":"O04","creator_id":"U04","title":"Cuci Ompreng MBG","type":"Volunteer","category":"lingkungan","location":"Online","reward":"Rp0","deadline":"2026-05-31","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-opportunity missing type => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[ERROR] Field --title dan --type wajib diisi.
+{"ok":false,"error":"Field --title dan --type wajib diisi"}
+
+---
+[2026-05-24 16:45:17] list-opportunities-by-creator U02 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+{"ok":true,"data":[{"id":"O02","creator_id":"U02","title":"Bikin Web Desa","type":"Freelance","category":"","location":"","reward":"Rp1500000","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"},{"id":"O03","creator_id":"U02","title":"Bantu Ngajar","type":"Volunteer","category":"","location":"","reward":"Rp0","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:17] get-opportunity O04 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+{"ok":true,"data":{"id":"O04","creator_id":"U04","title":"Cuci Ompreng MBG","type":"Volunteer","category":"lingkungan","location":"Online","reward":"Rp0","deadline":"2026-05-31","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] update-opportunity O04 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] Opportunity berhasil diupdate.
+{"ok":true,"data":{"id":"O04","creator_id":"U04","title":"Cuci Ompreng MBG","type":"Volunteer","category":"lingkungan","location":"Surabaya","reward":"Rp0","deadline":"2026-05-31","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] list-proposals => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] proposals.csv belum ada.
+{"ok":true,"data":[]}
+
+---
+[2026-05-24 16:45:17] add-proposal P01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] proposals.csv belum ada.
+[SUCCESS] Proposal masuk antrean.
+{"ok":true,"data":{"id":"P01","opportunity_id":"O01","applicant_id":"U04","cover_letter":"Saya jago desain bang","portfolio_url":"http://portfolio.local/u04","status":"Menunggu","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-proposal P02 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+[SUCCESS] Proposal masuk antrean.
+{"ok":true,"data":{"id":"P02","opportunity_id":"O02","applicant_id":"U04","cover_letter":"Siap bangun web desa","portfolio_url":"http://portfolio.local/u04","status":"Menunggu","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-proposal P03 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+[SUCCESS] Proposal masuk antrean.
+{"ok":true,"data":{"id":"P03","opportunity_id":"O04","applicant_id":"U03","cover_letter":"Saya siap bantu","portfolio_url":"http://portfolio.local/u03","status":"Menunggu","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-proposal missing applicant => EXPECTED_FAIL | exit=1
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+{"ok":false,"error":"Field proposal wajib diisi"}
+[ERROR] Field --opportunity_id dan --applicant_id wajib diisi.
+
+---
+[2026-05-24 16:45:17] update-proposal P02 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+{"ok":true,"data":{"id":"P02","opportunity_id":"O02","applicant_id":"U04","cover_letter":"Update cover letter","portfolio_url":"http://portfolio.local/u04","status":"Ditinjau","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] delete-proposal temp P99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+[SUCCESS] Proposal masuk antrean.
+{"ok":true,"data":{"id":"P99","opportunity_id":"O03","applicant_id":"U01","cover_letter":"Temp delete","portfolio_url":"","status":"Menunggu","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] delete-proposal P99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+{"ok":true,"message":"Proposal berhasil dihapus","id":"P99"}
+
+---
+[2026-05-24 16:45:17] list-proposals-by-applicant U04 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+{"ok":true,"data":[{"id":"P01","opportunity_id":"O01","applicant_id":"U04","cover_letter":"Saya jago desain bang","portfolio_url":"http://portfolio.local/u04","status":"Menunggu","created_at":"2026-05-24 16:45:17"},{"id":"P02","opportunity_id":"O02","applicant_id":"U04","cover_letter":"Update cover letter","portfolio_url":"http://portfolio.local/u04","status":"Ditinjau","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:17] list-proposals-by-opportunity O01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+{"ok":true,"data":[{"id":"P01","opportunity_id":"O01","applicant_id":"U04","cover_letter":"Saya jago desain bang","portfolio_url":"http://portfolio.local/u04","status":"Menunggu","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:17] process-proposal terima => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+[WARNING] workrooms.csv belum ada.
+{"ok":true,"data":{"id":"P01","opportunity_id":"O01","applicant_id":"U04","cover_letter":"Saya jago desain bang","portfolio_url":"http://portfolio.local/u04","status":"Diterima","created_at":"2026-05-24 16:45:17"}}
+[SUCCESS] Proposal diproses.
+
+---
+[2026-05-24 16:45:17] process-proposal tolak => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Proposals berhasil dimuat.
+[SUCCESS] Workrooms berhasil dimuat.
+[SUCCESS] Proposal diproses.
+{"ok":true,"data":{"id":"P03","opportunity_id":"O04","applicant_id":"U03","cover_letter":"Saya siap bantu","portfolio_url":"http://portfolio.local/u03","status":"Ditolak","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] list-workrooms => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+{"ok":true,"data":[{"id":"W01","opportunity_id":"O01","progress_pct":0,"status":"Berjalan","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:17] add-workroom temp W99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+[SUCCESS] Workroom berhasil ditambahkan.
+{"ok":true,"data":{"id":"W99","opportunity_id":"O04","progress_pct":5,"status":"Berjalan","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] update-workroom W99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+[SUCCESS] Workroom berhasil diupdate.
+{"ok":true,"data":{"id":"W99","opportunity_id":"O04","progress_pct":25,"status":"Berjalan","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] delete-workroom W99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+{"ok":true,"message":"Workroom berhasil dihapus","id":"W99"}
+
+---
+[2026-05-24 16:45:17] list-workrooms-by-opportunity O01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+{"ok":true,"data":[{"id":"W01","opportunity_id":"O01","progress_pct":0,"status":"Berjalan","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:17] get-workroom W01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Workrooms berhasil dimuat.
+{"ok":true,"data":{"id":"W01","opportunity_id":"O01","progress_pct":0,"status":"Berjalan","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] list-tasks => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] tasks.csv belum ada.
+{"ok":true,"data":[]}
+
+---
+[2026-05-24 16:45:17] add-task T01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[WARNING] tasks.csv belum ada.
+[SUCCESS] Task berhasil ditambahkan.
+{"ok":true,"data":{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Kasar","status":"Belum Dimulai","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:17] add-task temp T99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+{"ok":true,"data":{"id":"T99","workroom_id":"W01","title":"Temp Task","status":"Belum Dimulai","assignee_id":"U04","created_at":"2026-05-24 16:45:17"}}
+[SUCCESS] Task berhasil ditambahkan.
+
+---
+[2026-05-24 16:45:17] update-task T01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+[SUCCESS] Task berhasil diupdate.
+{"ok":true,"data":{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Final","status":"Proses","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:18] complete-task T01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+[SUCCESS] Task selesai.
+{"ok":true,"data":{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Final","status":"Selesai","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:18] delete-task T99 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+{"ok":true,"message":"Task berhasil dihapus","id":"T99"}
+
+---
+[2026-05-24 16:45:18] list-tasks-by-workroom W01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+{"ok":true,"data":[{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Final","status":"Selesai","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:18] list-tasks-by-assignee U03 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+{"ok":true,"data":[{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Final","status":"Selesai","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:18] get-task T01 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Tasks berhasil dimuat.
+{"ok":true,"data":{"id":"T01","workroom_id":"W01","title":"Bikin Sketsa Final","status":"Selesai","assignee_id":"U03","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:18] list-activities => PASS | exit=0
+[INFO] PIJAK backend started.
+{"ok":true,"data":[{"id":1,"user_id":"U03","text":"Task T01 selesai.","created_at":"2026-05-24 16:45:17"},{"id":2,"user_id":"U02","text":"Proposal P03 ditolak.","created_at":"2026-05-24 16:45:17"},{"id":3,"user_id":"U02","text":"Proposal P01 diterima, workroom dibuat.","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:18] list-activities-by-user U04 => PASS | exit=0
+[INFO] PIJAK backend started.
+{"ok":true,"data":[]}
+
+---
+[2026-05-24 16:45:18] show-activities => PASS | exit=0
+[INFO] PIJAK backend started.
+{"ok":true,"data":[{"id":1,"user_id":"U03","text":"Task T01 selesai.","created_at":"2026-05-24 16:45:17"},{"id":2,"user_id":"U02","text":"Proposal P03 ditolak.","created_at":"2026-05-24 16:45:17"},{"id":3,"user_id":"U02","text":"Proposal P01 diterima, workroom dibuat.","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:18] sort-opportunities => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] Opportunity berhasil di-sort.
+{"ok":true,"data":[{"id":"O02","creator_id":"U02","title":"Bikin Web Desa","type":"Freelance","category":"","location":"","reward":"Rp1500000","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"},{"id":"O01","creator_id":"U01","title":"Desain Logo","type":"Freelance","category":"","location":"","reward":"Rp500000","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"},{"id":"O03","creator_id":"U02","title":"Bantu Ngajar","type":"Volunteer","category":"","location":"","reward":"Rp0","deadline":"","status":"Open","created_at":"2026-05-24 16:45:17"},{"id":"O04","creator_id":"U04","title":"Cuci Ompreng MBG","type":"Volunteer","category":"lingkungan","location":"Surabaya","reward":"Rp0","deadline":"2026-05-31","status":"Open","created_at":"2026-05-24 16:45:17"}]}
+
+---
+[2026-05-24 16:45:18] build-user-hash => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+[SUCCESS] User hash table berhasil dibangun.
+{"ok":true,"message":"hash table siap"}
+
+---
+[2026-05-24 16:45:18] search-user-hash U03 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U03","name":"Jonan Update","role_title":"Programmer Muda","level":2,"xp":50,"skills":"C++","stats_hours":10,"stats_co2":3,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:18] build-auth-hash => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+[SUCCESS] Auth hash table berhasil dibangun.
+{"ok":true,"message":"auth hash siap"}
+
+---
+[2026-05-24 16:45:18] search-user-auth email => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":{"id":"U01","name":"Raka Mahendra","role_title":"Kreator Muda","level":1,"xp":0,"skills":"","stats_hours":0,"stats_co2":0,"created_at":"2026-05-24 16:45:16"}}
+
+---
+[2026-05-24 16:45:18] build-opportunity-tree => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+[SUCCESS] BST opportunity berhasil dibangun.
+{"ok":true,"message":"tree siap"}
+
+---
+[2026-05-24 16:45:18] show-opportunity-tree => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+{"ok":true,"data":[{"id":"O03","title":"Bantu Ngajar","reward":"Rp0","type":"Volunteer","status":"Open"},{"id":"O04","title":"Cuci Ompreng MBG","reward":"Rp0","type":"Volunteer","status":"Open"},{"id":"O01","title":"Desain Logo","reward":"Rp500000","type":"Freelance","status":"Open"},{"id":"O02","title":"Bikin Web Desa","reward":"Rp1500000","type":"Freelance","status":"Open"}]}
+
+---
+[2026-05-24 16:45:18] search-opportunity-tree O04 => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Opportunities berhasil dimuat.
+{"ok":true,"data":{"id":"O04","creator_id":"U04","title":"Cuci Ompreng MBG","type":"Volunteer","category":"lingkungan","location":"Surabaya","reward":"Rp0","deadline":"2026-05-31","status":"Open","created_at":"2026-05-24 16:45:17"}}
+
+---
+[2026-05-24 16:45:18] build-graph => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+[SUCCESS] Graph berhasil dibangun.
+{"ok":true,"message":"graph siap"}
+
+---
+[2026-05-24 16:45:18] show-graph => PASS | exit=0
+[INFO] PIJAK backend started.
+[SUCCESS] Users berhasil dimuat.
+{"ok":true,"data":[{"id_user":"U01","name":"Raka Mahendra","role_title":"Kreator Muda","edges":["U04","U02"]},{"id_user":"U02","name":"Ayu Lestari","role_title":"Kreator Muda","edges":["U04","U01"]},{"id_user":"U03","name":"Jonan Update","role_title":"Programmer Muda","edges":[]},{"id_user":"U04","name":"Nando","role_title":"Kreator Muda","edges":["U02","U01"]}]}
+
+---
