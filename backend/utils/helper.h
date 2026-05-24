@@ -14,6 +14,9 @@ namespace helper
     string escapeJson(string text);
 
     string quote(string text);
+    string csvEscape(const string &s);
+    string csvUnescape(const string &s);
+    int splitCSV(string line, string fields[], int maxFields);
 
     void logInfo(string text);
 

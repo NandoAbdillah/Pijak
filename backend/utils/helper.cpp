@@ -48,6 +48,80 @@ namespace helper
         return out;
     }
 
+    string csvEscape(const string &s)
+    {
+        string out = "\"";
+        for (char c : s)
+        {
+            if (c == '"')
+                out += "\"\"";
+            else
+                out += c;
+        }
+        out += "\"";
+        return out;
+    }
+
+    string csvUnescape(const string &s)
+    {
+        if (s.size() >= 2 && s.front() == '"' && s.back() == '"')
+        {
+            string inner = s.substr(1, s.size() - 2);
+            string out;
+            for (size_t i = 0; i < inner.size(); i++)
+            {
+                if (inner[i] == '"' && i + 1 < inner.size() && inner[i + 1] == '"')
+                {
+                    out += '"';
+                    i++;
+                }
+                else
+                {
+                    out += inner[i];
+                }
+            }
+            return out;
+        }
+        return s;
+    }
+
+    int splitCSV(string line, string fields[], int maxFields)
+    {
+        int count = 0;
+        string cur;
+        bool inQuotes = false;
+
+        for (size_t i = 0; i < line.size(); i++)
+        {
+            char c = line[i];
+
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.size() && line[i + 1] == '"')
+                {
+                    cur += '"';
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (c == ',' && !inQuotes && count < maxFields - 1)
+            {
+                fields[count++] = cur;
+                cur.clear();
+            }
+            else
+            {
+                cur += c;
+            }
+        }
+
+        fields[count++] = cur;
+        return count;
+    }
+
     string quote(string text)
     {
         return "\"" + escapeJson(text) + "\"";

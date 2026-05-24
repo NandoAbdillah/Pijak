@@ -62,9 +62,7 @@ int main(int argc, char *argv[])
         helper::logInfo("Command: " + command);
     }
 
-    // =========================
     // HEALTH
-    // =========================
     if (command == "health")
     {
         helper::logSuccess("Health check success.");
@@ -154,7 +152,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-   if (command == "forgot-password")
+    if (command == "forgot-password")
     {
         data::loadAllUsers();
         data::buildAuthHashTable();
@@ -172,23 +170,23 @@ int main(int argc, char *argv[])
         }
 
         // TAHAP 1: Meminta OTP (User belum ngelempar argumen --otp)
-        if (otp == "") 
+        if (otp == "")
         {
-            // Simulasi generate OTP. Nanti React akan nangkep "dummy_otp" ini 
+            // Simulasi generate OTP. Nanti React akan nangkep "dummy_otp" ini
             // untuk dicocokkan dengan inputan user di layar.
-            string dummyOTP = "123456"; 
+            string dummyOTP = "123456";
             cout << "{\"ok\":true,\"message\":\"Kode OTP telah dikirim ke " << authKey << "\",\"dummy_otp\":\"" << dummyOTP << "\"}" << endl;
             return 0;
         }
 
         // TAHAP 2: Verifikasi OTP & Eksekusi Ganti Password
-        if (otp != "123456") 
+        if (otp != "123456")
         {
             cout << "{\"ok\":false,\"error\":\"Kode OTP yang dimasukkan salah!\"}" << endl;
             return 1;
         }
 
-        if (newPassword == "") 
+        if (newPassword == "")
         {
             cout << "{\"ok\":false,\"error\":\"Password baru tidak boleh kosong!\"}" << endl;
             return 1;
@@ -196,7 +194,7 @@ int main(int argc, char *argv[])
 
         // Jika OTP benar, ubah memori password dan simpan ulang ke CSV
         found->password = newPassword;
-        if (data::updateUser(*found)) 
+        if (data::updateUser(*found))
         {
             cout << "{\"ok\":true,\"message\":\"Password berhasil direset! Silakan login dengan password baru.\"}" << endl;
             return 0;
@@ -206,9 +204,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // =========================
     // USERS
-    // =========================
     if (command == "list-users")
     {
         data::loadAllUsers();
@@ -332,9 +328,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // =========================
     // OPPORTUNITIES
-    // =========================
     if (command == "list-opportunities")
     {
         data::loadAllOpportunities();
@@ -460,9 +454,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // =========================
     // PROPOSALS (QUEUE)
-    // =========================
     if (command == "list-proposals")
     {
         data::loadAllProposals();
@@ -518,15 +510,16 @@ int main(int argc, char *argv[])
         data::loadAllWorkrooms();
         data::loadAllActivities();
 
-        data::Proposal *p = NULL;
-        if (!data::dequeueProposal(p))
+        string action = getArgValue(argc, argv, "--action", "terima");
+        string actorId = getArgValue(argc, argv, "--actor_id", "SYSTEM");
+
+        data::Proposal *p = data::findFirstPendingProposal();
+        if (p == NULL)
         {
-            helper::logWarning("Proposal kosong.");
+            helper::logWarning("Proposal kosong atau tidak ada yang berstatus Menunggu.");
             cout << "{\"ok\":false,\"error\":\"Proposal kosong\"}" << endl;
             return 1;
         }
-
-        string action = getArgValue(argc, argv, "--action", "terima");
 
         if (action == "terima")
         {
@@ -541,12 +534,12 @@ int main(int argc, char *argv[])
             w.next = NULL;
 
             data::addWorkroom(w);
-            data::pushActivity("Proposal " + p->id + " diterima, workroom dibuat.");
+            data::pushActivity(actorId, "Proposal " + p->id + " diterima, workroom dibuat.");
         }
         else
         {
             p->status = "Ditolak";
-            data::pushActivity("Proposal " + p->id + " ditolak.");
+            data::pushActivity(actorId, "Proposal " + p->id + " ditolak.");
         }
 
         data::saveAllProposals();
@@ -556,14 +549,66 @@ int main(int argc, char *argv[])
              << "\"ok\":true,"
              << "\"data\":" << data::proposalToJson(*p)
              << "}" << endl;
-
-        delete p;
         return 0;
     }
 
-    // =========================
+    if (command == "update-proposal")
+    {
+        data::loadAllProposals();
+
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::Proposal *found = data::findProposalById(id);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"Proposal tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        data::Proposal updated = *found;
+        updated.opportunity_id = getArgValue(argc, argv, "--opportunity_id", updated.opportunity_id);
+        updated.applicant_id = getArgValue(argc, argv, "--applicant_id", updated.applicant_id);
+        updated.cover_letter = getArgValue(argc, argv, "--cover_letter", updated.cover_letter);
+        updated.portfolio_url = getArgValue(argc, argv, "--portfolio_url", updated.portfolio_url);
+        updated.status = getArgValue(argc, argv, "--status", updated.status);
+
+        if (data::updateProposal(updated))
+        {
+            cout << "{\"ok\":true,\"data\":" << data::proposalToJson(updated) << "}" << endl;
+            return 0;
+        }
+
+        cout << "{\"ok\":false,\"error\":\"Gagal update proposal\"}" << endl;
+        return 1;
+    }
+
+    if (command == "delete-proposal")
+    {
+        data::loadAllProposals();
+
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        if (data::deleteProposal(id))
+        {
+            cout << "{\"ok\":true,\"message\":\"Proposal berhasil dihapus\",\"id\":" << helper::quote(id) << "}" << endl;
+            return 0;
+        }
+
+        cout << "{\"ok\":false,\"error\":\"Proposal tidak ditemukan\"}" << endl;
+        return 1;
+    }
+    
     // WORKROOMS
-    // =========================
     if (command == "list-workrooms")
     {
         data::loadAllWorkrooms();
@@ -651,9 +696,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // =========================
     // TASKS
-    // =========================
     if (command == "list-tasks")
     {
         data::loadAllTasks();
@@ -749,6 +792,8 @@ int main(int argc, char *argv[])
         data::loadAllActivities();
 
         string id = getArgValue(argc, argv, "--id", "");
+        string actorId = getArgValue(argc, argv, "--actor_id", "SYSTEM");
+
         if (id == "")
         {
             helper::logError("Field --id wajib diisi.");
@@ -767,7 +812,7 @@ int main(int argc, char *argv[])
         found->status = "Selesai";
         if (data::updateTask(*found))
         {
-            data::pushActivity("Task " + id + " selesai.");
+            data::pushActivity(actorId, "Task " + id + " selesai.");
             helper::logSuccess("Task selesai.");
             cout << "{"
                  << "\"ok\":true,"
@@ -781,19 +826,28 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // =========================
     // STACK / ACTIVITY
-    // =========================
-    if (command == "show-activities")
+    if (command == "list-activities")
     {
         data::loadAllActivities();
-        data::showActivities();
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::activitiesToJson()
+             << "}" << endl;
         return 0;
     }
 
-    // =========================
+    if (command == "show-activities")
+    {
+        data::loadAllActivities();
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::activitiesToJson()
+             << "}" << endl;
+        return 0;
+    }
+
     // SORTING
-    // =========================
     if (command == "sort-opportunities")
     {
         data::loadAllOpportunities();
@@ -806,9 +860,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // =========================
     // HASH TABLE
-    // =========================
     if (command == "build-user-hash")
     {
         data::loadAllUsers();
@@ -844,9 +896,39 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // =========================
+    if (command == "build-auth-hash")
+    {
+        data::loadAllUsers();
+        data::buildAuthHashTable();
+        helper::logSuccess("Auth hash table berhasil dibangun.");
+        cout << "{\"ok\":true,\"message\":\"auth hash siap\"}" << endl;
+        return 0;
+    }
+
+    if (command == "search-user-auth")
+    {
+        data::loadAllUsers();
+        data::buildAuthHashTable();
+
+        string authKey = getArgValue(argc, argv, "--auth", "");
+        if (authKey == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --auth wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::User *found = data::findUserByAuthKey(authKey);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"User tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::userToJson(*found) << "}" << endl;
+        return 0;
+    }
+   
     // BST
-    // =========================
     if (command == "build-opportunity-tree")
     {
         data::loadAllOpportunities();
@@ -856,13 +938,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+
     if (command == "show-opportunity-tree")
     {
         data::loadAllOpportunities();
         data::buildOpportunityTree();
-        cout << "{\"ok\":true,\"data\":\"" << endl;
-        data::showOpportunityTree(data::rootOpportunity);
-        cout << "\"}" << endl;
+        cout << "{\"ok\":true,\"data\":" << data::opportunityTreeToJson(data::rootOpportunity) << "}" << endl;
         return 0;
     }
 
@@ -887,9 +968,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // =========================
     // GRAPH
-    // =========================
     if (command == "build-graph")
     {
         data::loadAllUsers();
@@ -903,13 +982,252 @@ int main(int argc, char *argv[])
     {
         data::loadAllUsers();
         data::buildGraphFromUsers();
-
-        string startId = getArgValue(argc, argv, "--start", "");
-        if (startId == "" && data::headUser != NULL)
-            startId = data::headUser->id;
-
-        data::showGraphDFS(startId);
+        cout << "{\"ok\":true,\"data\":" << data::graphToJson() << "}" << endl;
         return 0;
+    }
+
+    // PATCH
+    if (command == "list-opportunities-by-creator")
+    {
+        data::loadAllOpportunities();
+        string creatorId = getArgValue(argc, argv, "--creator_id", "");
+        if (creatorId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --creator_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::opportunitiesToJsonByCreator(creatorId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-proposals-by-applicant")
+    {
+        data::loadAllProposals();
+        string applicantId = getArgValue(argc, argv, "--applicant_id", "");
+        if (applicantId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --applicant_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::proposalsToJsonByApplicant(applicantId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-proposals-by-opportunity")
+    {
+        data::loadAllProposals();
+        string opportunityId = getArgValue(argc, argv, "--opportunity_id", "");
+        if (opportunityId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --opportunity_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::proposalsToJsonByOpportunity(opportunityId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-workrooms-by-opportunity")
+    {
+        data::loadAllWorkrooms();
+        string opportunityId = getArgValue(argc, argv, "--opportunity_id", "");
+        if (opportunityId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --opportunity_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::workroomsToJsonByOpportunity(opportunityId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-tasks-by-workroom")
+    {
+        data::loadAllTasks();
+        string workroomId = getArgValue(argc, argv, "--workroom_id", "");
+        if (workroomId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --workroom_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::tasksToJsonByWorkroom(workroomId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-tasks-by-assignee")
+    {
+        data::loadAllTasks();
+        string assigneeId = getArgValue(argc, argv, "--assignee_id", "");
+        if (assigneeId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --assignee_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::tasksToJsonByAssignee(assigneeId) << "}" << endl;
+        return 0;
+    }
+
+    if (command == "list-activities-by-user")
+    {
+        data::loadAllActivities();
+        string userId = getArgValue(argc, argv, "--user_id", "");
+        if (userId == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --user_id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        cout << "{\"ok\":true,\"data\":" << data::activitiesToJsonByUser(userId) << "}" << endl;
+        return 0;
+    }
+
+    // GET DETAIL
+    if (command == "get-user")
+    {
+        data::loadAllUsers();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::User *found = data::findUserById(id);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"User tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::userToJson(*found)
+             << "}" << endl;
+        return 0;
+    }
+
+    if (command == "get-opportunity")
+    {
+        data::loadAllOpportunities();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::Opportunity *found = data::findOpportunityById(id);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"Opportunity tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::opportunityToJson(*found)
+             << "}" << endl;
+        return 0;
+    }
+
+    if (command == "get-workroom")
+    {
+        data::loadAllWorkrooms();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::Workroom *found = data::findWorkroomById(id);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"Workroom tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::workroomToJson(*found)
+             << "}" << endl;
+        return 0;
+    }
+
+    if (command == "get-task")
+    {
+        data::loadAllTasks();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        data::Task *found = data::findTaskById(id);
+        if (found == NULL)
+        {
+            cout << "{\"ok\":false,\"error\":\"Task tidak ditemukan\"}" << endl;
+            return 1;
+        }
+
+        cout << "{"
+             << "\"ok\":true,"
+             << "\"data\":" << data::taskToJson(*found)
+             << "}" << endl;
+        return 0;
+    }
+
+    if (command == "delete-workroom")
+    {
+        data::loadAllWorkrooms();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        if (data::deleteWorkroom(id))
+        {
+            cout << "{"
+                 << "\"ok\":true,"
+                 << "\"message\":\"Workroom berhasil dihapus\","
+                 << "\"id\":" << helper::quote(id)
+                 << "}" << endl;
+            return 0;
+        }
+
+        cout << "{\"ok\":false,\"error\":\"Workroom tidak ditemukan\"}" << endl;
+        return 1;
+    }
+
+    if (command == "delete-task")
+    {
+        data::loadAllTasks();
+        string id = getArgValue(argc, argv, "--id", "");
+        if (id == "")
+        {
+            cout << "{\"ok\":false,\"error\":\"Field --id wajib diisi\"}" << endl;
+            return 1;
+        }
+
+        if (data::deleteTask(id))
+        {
+            cout << "{"
+                 << "\"ok\":true,"
+                 << "\"message\":\"Task berhasil dihapus\","
+                 << "\"id\":" << helper::quote(id)
+                 << "}" << endl;
+            return 0;
+        }
+
+        cout << "{\"ok\":false,\"error\":\"Task tidak ditemukan\"}" << endl;
+        return 1;
     }
 
     helper::logWarning("Command tidak dikenal: " + command);
