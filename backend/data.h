@@ -80,9 +80,12 @@ namespace data
         Task *next;
     };
 
+    // data.h
     struct Activity
     {
-        string text;
+        string user_id;    // pemilik/aktor aktivitas
+        string text;       // pesan aktivitas
+        string created_at; // waktu
         Activity *next;
     };
 
@@ -184,10 +187,11 @@ namespace data
     User *findUserByName(string name);
     Opportunity *findOpportunityById(string id);
     Proposal *findProposalById(string id);
+    Proposal *findFirstPendingProposal();
     Workroom *findWorkroomById(string id);
     Task *findTaskById(string id);
 
-    void pushActivity(string text);
+    // void pushActivity(string text);
     void showActivities();
 
     void enqueueProposal(Proposal newProposal);
@@ -197,7 +201,7 @@ namespace data
     User *findUserByHash(string id);
 
     void buildAuthHashTable();
-    User *findUserByAuthKey(string authKey); 
+    User *findUserByAuthKey(string authKey);
     int authHashFunction(string key);
 
     OpportunityTree *insertOpportunityTree(OpportunityTree *root, Opportunity data);
@@ -213,17 +217,37 @@ namespace data
     void sortOpportunitiesByReward();
     int rewardToInt(string reward);
 
+    // query JSON per relasi
+    string opportunitiesToJsonByCreator(string creator_id);
+    string proposalsToJsonByApplicant(string applicant_id);
+    string proposalsToJsonByOpportunity(string opportunity_id);
+    string workroomsToJsonByOpportunity(string opportunity_id);
+
+    string tasksToJsonByWorkroom(string workroom_id);
+    string tasksToJsonByAssignee(string assignee_id);
+    string activitiesToJsonByUser(string user_id);
+
     string usersToJson();
     string opportunitiesToJson();
     string proposalsToJson();
     string workroomsToJson();
     string tasksToJson();
+    string activitiesToJson();
 
     string userToJson(User user);
     string opportunityToJson(Opportunity opportunity);
     string proposalToJson(Proposal proposal);
     string workroomToJson(Workroom workroom);
     string taskToJson(Task task);
+
+    // activity
+    void pushActivity(string text);
+    void pushActivity(string user_id, string text);
+    string activitiesToJsonByUser(string user_id);
+
+    // tree / graph json
+    string opportunityTreeToJson(OpportunityTree *root);
+    string graphToJson();
 }
 
 #endif

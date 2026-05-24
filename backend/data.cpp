@@ -35,32 +35,7 @@ namespace data
     GraphNode *headGraph = NULL;
     GraphNode *tailGraph = NULL;
 
-    // =========================
     // HELPER DASAR
-    // =========================
-
-    int splitLine(string line, string fields[], int maxFields)
-    {
-        int count = 0;
-        string current = "";
-
-        for (int i = 0; i < (int)line.size(); i++)
-        {
-            if (line[i] == ',' && count < maxFields - 1)
-            {
-                fields[count] = current;
-                count++;
-                current = "";
-            }
-            else
-            {
-                current += line[i];
-            }
-        }
-
-        fields[count] = current;
-        return count + 1;
-    }
 
     void clearUsers()
     {
@@ -194,9 +169,7 @@ namespace data
         return atoi(angka.c_str());
     }
 
-    // =========================
-    // INIT
-    // =========================
+    // 1. INITIAL
 
     void init()
     {
@@ -225,9 +198,7 @@ namespace data
         clearUserHash();
     }
 
-    // =========================
-    // COUNT
-    // =========================
+    // 2. COUNT
 
     int countUsers()
     {
@@ -289,9 +260,7 @@ namespace data
         return total;
     }
 
-    // =========================
-    // FIND
-    // =========================
+    // 3. FIND
 
     User *findUserById(string id)
     {
@@ -365,9 +334,7 @@ namespace data
         return NULL;
     }
 
-    // =========================
-    // INSERT BELAKANG
-    // =========================
+    // 4. INSERT
 
     void insertUser(User newUser)
     {
@@ -437,9 +404,7 @@ namespace data
         }
     }
 
-    // =========================
-    // QUEUE PROPOSAL
-    // =========================
+    // 5. QUEUE PROPOSAL
 
     void enqueueProposal(Proposal newProposal)
     {
@@ -458,6 +423,18 @@ namespace data
         }
     }
 
+    Proposal *findFirstPendingProposal()
+    {
+        Proposal *bantu = frontProposal;
+        while (bantu != NULL)
+        {
+            if (bantu->status == "Menunggu")
+                return bantu;
+            bantu = bantu->next;
+        }
+        return NULL;
+    }
+
     bool dequeueProposal(Proposal *&outProposal)
     {
         if (frontProposal == NULL)
@@ -473,55 +450,49 @@ namespace data
         return true;
     }
 
-    // =========================
-    // STACK ACTIVITY
-    // =========================
-
-    // =========================
-    // LOAD & SAVE ACTIVITY STACK
-    // =========================
+    // 6. STACK ACTIVITY
 
     bool loadAllActivities()
     {
-        clearActivities(); // Bersihkan RAM dulu biar nggak numpuk ganda
+        clearActivities();
 
         ifstream file(DB_ACTIVITIES);
         if (!file.is_open())
-        {
-            // Nggak usah error, anggap aja belum ada aktivitas
             return true;
-        }
 
         string line;
         bool firstLine = true;
-        Activity *tailAct = NULL; // Pointer bantu buat nyambungin di ekor
+        Activity *tailAct = NULL;
 
         while (getline(file, line))
         {
             if (line == "")
                 continue;
+
             if (firstLine)
             {
                 firstLine = false;
                 continue;
             }
 
-            // Alokasi memori manual untuk Node Stack
+            string fields[3];
+            helper::splitCSV(line, fields, 3);
+
             Activity *baru = new Activity;
-            baru->text = line;
+            baru->user_id = fields[0];
+            baru->text = helper::csvUnescape(fields[1]);
+            baru->created_at = helper::csvUnescape(fields[2]);
             baru->next = NULL;
 
-            // Logika merekonstruksi Stack dari CSV agar urutan LIFO-nya tetap benar
             if (topActivity == NULL)
-            {
                 topActivity = tailAct = baru;
-            }
             else
             {
                 tailAct->next = baru;
                 tailAct = baru;
             }
         }
+
         return true;
     }
 
@@ -534,58 +505,92 @@ namespace data
             return false;
         }
 
-        file << "text\n"; // Header kolom
+        file << "user_id,text,created_at\n";
 
-        // Tulis dari Top (Aktivitas Terbaru) sampai ke dasar
         Activity *bantu = topActivity;
         while (bantu != NULL)
         {
-            file << bantu->text << "\n";
+            file << bantu->user_id << ","
+                 << helper::csvEscape(bantu->text) << ","
+                 << helper::csvEscape(bantu->created_at) << "\n";
             bantu = bantu->next;
         }
 
         return true;
     }
 
-    // void pushActivity(string text)
-    // {
-    //     Activity *baru = new Activity;
-    //     baru->text = text;
-    //     baru->next = topActivity;
-    //     topActivity = baru;
-    // }
-
     void pushActivity(string text)
     {
-        // Alokasi memori manual (Dynamic Allocation)
-        Activity *baru = new Activity;
-        baru->text = text;
+        pushActivity("SYSTEM", text);
+    }
 
-        // Operasi PUSH standard Stack (LIFO)
+    void pushActivity(string user_id, string text)
+    {
+        Activity *baru = new Activity;
+        baru->user_id = user_id;
+        baru->text = text;
+        baru->created_at = helper::nowText();
         baru->next = topActivity;
         topActivity = baru;
-
-        // PENTING: Langsung simpan ke CSV biar abadi!
         saveAllActivities();
     }
 
-    void showActivities()
+    string activitiesToJson()
     {
-        cout << "--- RIWAYAT AKTIVITAS ---" << endl;
-
+        string out = "[";
         Activity *bantu = topActivity;
-        int no = 1;
+        bool first = true;
+        int idx = 1;
+
         while (bantu != NULL)
         {
-            cout << no << ". " << bantu->text << endl;
+            if (!first)
+                out += ",";
+            out += string("{") +
+                   "\"id\":" + to_string(idx) + "," +
+                   "\"user_id\":" + helper::quote(bantu->user_id) + "," +
+                   "\"text\":" + helper::quote(bantu->text) + "," +
+                   "\"created_at\":" + helper::quote(bantu->created_at) +
+                   "}";
+            first = false;
             bantu = bantu->next;
-            no++;
+            idx++;
         }
+
+        out += "]";
+        return out;
     }
 
-    // =========================
-    // LOAD CSV
-    // =========================
+    string activitiesToJsonByUser(string user_id)
+    {
+        string out = "[";
+        Activity *bantu = topActivity;
+        bool first = true;
+        int idx = 1;
+
+        while (bantu != NULL)
+        {
+            if (bantu->user_id == user_id)
+            {
+                if (!first)
+                    out += ",";
+                out += string("{") +
+                       "\"id\":" + to_string(idx) + "," +
+                       "\"user_id\":" + helper::quote(bantu->user_id) + "," +
+                       "\"text\":" + helper::quote(bantu->text) + "," +
+                       "\"created_at\":" + helper::quote(bantu->created_at) +
+                       "}";
+                first = false;
+            }
+            bantu = bantu->next;
+            idx++;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    // 7. LOAD & SAVE ACTIVITY STACK
 
     bool loadAllUsers()
     {
@@ -613,7 +618,7 @@ namespace data
             }
 
             string fields[12];
-            splitLine(line, fields, 12);
+            helper::splitCSV(line, fields, 12);
 
             User u;
             u.id = fields[0];
@@ -663,7 +668,7 @@ namespace data
             }
 
             string fields[10];
-            splitLine(line, fields, 10);
+            helper::splitCSV(line, fields, 10);
 
             Opportunity o;
             o.id = fields[0];
@@ -711,16 +716,16 @@ namespace data
             }
 
             string fields[7];
-            splitLine(line, fields, 7);
+            helper::splitCSV(line, fields, 7);
 
             Proposal p;
             p.id = fields[0];
             p.opportunity_id = fields[1];
             p.applicant_id = fields[2];
-            p.cover_letter = fields[3];
-            p.portfolio_url = fields[4];
-            p.status = fields[5];
-            p.created_at = fields[6];
+            p.cover_letter = helper::csvUnescape(fields[3]);
+            p.portfolio_url = helper::csvUnescape(fields[4]);
+            p.status = helper::csvUnescape(fields[5]);
+            p.created_at = helper::csvUnescape(fields[6]);
             p.next = NULL;
 
             enqueueProposal(p);
@@ -756,7 +761,7 @@ namespace data
             }
 
             string fields[5];
-            splitLine(line, fields, 5);
+            helper::splitCSV(line, fields, 5);
 
             Workroom w;
             w.id = fields[0];
@@ -799,7 +804,7 @@ namespace data
             }
 
             string fields[6];
-            splitLine(line, fields, 6);
+            helper::splitCSV(line, fields, 6);
 
             Task t;
             t.id = fields[0];
@@ -817,9 +822,7 @@ namespace data
         return true;
     }
 
-    // =========================
-    // SAVE CSV
-    // =========================
+    // 8. SAVE CSV
 
     bool saveAllUsers()
     {
@@ -841,11 +844,11 @@ namespace data
                  << bantu->phone << ","
                  << bantu->password << ","
                  << bantu->role_title << ","
-                 << bantu->level << ","
-                 << bantu->xp << ","
+                 << to_string(bantu->level) << ","
+                 << to_string(bantu->xp) << ","
                  << bantu->skills << ","
-                 << bantu->stats_hours << ","
-                 << bantu->stats_co2 << ","
+                 << to_string(bantu->stats_hours) << ","
+                 << to_string(bantu->stats_co2) << ","
                  << bantu->created_at << "\n";
             bantu = bantu->next;
         }
@@ -900,10 +903,10 @@ namespace data
             file << bantu->id << ","
                  << bantu->opportunity_id << ","
                  << bantu->applicant_id << ","
-                 << bantu->cover_letter << ","
-                 << bantu->portfolio_url << ","
-                 << bantu->status << ","
-                 << bantu->created_at << "\n";
+                 << helper::csvEscape(bantu->cover_letter) << ","
+                 << helper::csvEscape(bantu->portfolio_url) << ","
+                 << helper::csvEscape(bantu->status) << ","
+                 << helper::csvEscape(bantu->created_at) << "\n";
             bantu = bantu->next;
         }
 
@@ -926,7 +929,7 @@ namespace data
         {
             file << bantu->id << ","
                  << bantu->opportunity_id << ","
-                 << bantu->progress_pct << ","
+                 << to_string(bantu->progress_pct) << ","
                  << bantu->status << ","
                  << bantu->created_at << "\n";
             bantu = bantu->next;
@@ -961,30 +964,37 @@ namespace data
         return true;
     }
 
-    // =========================
-    // CRUD USER
-    // =========================
+    // 9. CRUD USER
 
-    void clearAuthHash() {
-        for (int i = 0; i < MAX_HASH; i++) {
+    void clearAuthHash()
+    {
+        for (int i = 0; i < MAX_HASH; i++)
+        {
             UserHashNode *bantu = authHashTable[i];
-            while (bantu != NULL) {
-                UserHashNode *temp = bantu; bantu = bantu->next; delete temp;
+            while (bantu != NULL)
+            {
+                UserHashNode *temp = bantu;
+                bantu = bantu->next;
+                delete temp;
             }
             authHashTable[i] = NULL;
         }
     }
 
-    int authHashFunction(string key) {
+    int authHashFunction(string key)
+    {
         int sum = 0;
-        for (int i = 0; i < (int)key.size(); i++) sum += (int)key[i];
+        for (int i = 0; i < (int)key.size(); i++)
+            sum += (int)key[i];
         return sum % MAX_HASH;
     }
 
-    void buildAuthHashTable() {
+    void buildAuthHashTable()
+    {
         clearAuthHash();
         User *bantu = headUser;
-        while (bantu != NULL) {
+        while (bantu != NULL)
+        {
             // Kita hash berdasarkan Email
             int idxEmail = authHashFunction(bantu->email);
             UserHashNode *nodeEmail = new UserHashNode;
@@ -993,7 +1003,8 @@ namespace data
             authHashTable[idxEmail] = nodeEmail;
 
             // Kita hash juga berdasarkan Phone (kalau ada isinya)
-            if(bantu->phone != "") {
+            if (bantu->phone != "")
+            {
                 int idxPhone = authHashFunction(bantu->phone);
                 UserHashNode *nodePhone = new UserHashNode;
                 nodePhone->data = *bantu;
@@ -1004,18 +1015,19 @@ namespace data
         }
     }
 
-    // Pencarian O(1) berdasarkan Email atau Phone
-    User *findUserByAuthKey(string authKey) {
+    // Pencarian O(1) 
+    User *findUserByAuthKey(string authKey)
+    {
         int idx = authHashFunction(authKey);
         UserHashNode *bantu = authHashTable[idx];
-        while (bantu != NULL) {
+        while (bantu != NULL)
+        {
             if (bantu->data.email == authKey || bantu->data.phone == authKey)
                 return &(bantu->data);
             bantu = bantu->next;
         }
         return NULL;
     }
-
 
     bool addUser(User newUser)
     {
@@ -1075,9 +1087,7 @@ namespace data
         return false;
     }
 
-    // =========================
-    // CRUD OPPORTUNITY
-    // =========================
+    // 10. CRUD OPPORTUNITY
 
     bool addOpportunity(Opportunity newOpportunity)
     {
@@ -1135,9 +1145,7 @@ namespace data
         return false;
     }
 
-    // =========================
-    // CRUD PROPOSAL
-    // =========================
+    // 11. CRUD PROPOSAL
 
     bool addProposal(Proposal newProposal)
     {
@@ -1194,9 +1202,8 @@ namespace data
         return false;
     }
 
-    // =========================
-    // CRUD WORKROOM
-    // =========================
+
+    // 12. CRUD WORKROOM
 
     bool addWorkroom(Workroom newWorkroom)
     {
@@ -1246,9 +1253,7 @@ namespace data
         return false;
     }
 
-    // =========================
-    // CRUD TASK
-    // =========================
+    // 13. CRUD TASK
 
     bool addTask(Task newTask)
     {
@@ -1299,9 +1304,7 @@ namespace data
         return false;
     }
 
-    // =========================
-    // JSON MODEL
-    // =========================
+    // 14. JSON MODEL
 
     string userToJson(User user)
     {
@@ -1465,9 +1468,7 @@ namespace data
         return out;
     }
 
-    // =========================
-    // SORTING
-    // =========================
+    // 15. SORTING
 
     void sortOpportunitiesByReward()
     {
@@ -1499,20 +1500,17 @@ namespace data
                         prev->next = nextNode;
                     }
 
-                    // Setelah di-swap, posisi prev menjadi nextNode, bantu tetap
                     prev = nextNode;
                     swapped = true;
                 }
                 else
                 {
-                    // Jika tidak di-swap, maju satu langkah
                     prev = bantu;
                     bantu = bantu->next;
                 }
             }
         } while (swapped);
 
-        // Update tailOpportunity agar jika ada insert baru tidak putus
         Opportunity *temp = headOpportunity;
         if (temp != NULL)
         {
@@ -1526,9 +1524,7 @@ namespace data
         saveAllOpportunities();
     }
 
-    // =========================
-    // HASH TABLE
-    // =========================
+    // 16. HASH TABLE
 
     void buildUserHashTable()
     {
@@ -1563,9 +1559,7 @@ namespace data
         return NULL;
     }
 
-    // =========================
-    // BST
-    // =========================
+    // 17. BST
 
     OpportunityTree *insertOpportunityTree(OpportunityTree *root, Opportunity data)
     {
@@ -1624,9 +1618,216 @@ namespace data
         showOpportunityTree(root->right);
     }
 
-    // =========================
-    // GRAPH
-    // =========================
+
+    string proposalsToJsonByApplicant(string applicant_id)
+    {
+        string out = "[";
+        Proposal *bantu = frontProposal;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->applicant_id == applicant_id)
+            {
+                if (!first)
+                    out += ",";
+                out += proposalToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string proposalsToJsonByOpportunity(string opportunity_id)
+    {
+        string out = "[";
+        Proposal *bantu = frontProposal;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->opportunity_id == opportunity_id)
+            {
+                if (!first)
+                    out += ",";
+                out += proposalToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string workroomsToJsonByOpportunity(string opportunity_id)
+    {
+        string out = "[";
+        Workroom *bantu = headWorkroom;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->opportunity_id == opportunity_id)
+            {
+                if (!first)
+                    out += ",";
+                out += workroomToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string tasksToJsonByWorkroom(string workroom_id)
+    {
+        string out = "[";
+        Task *bantu = headTask;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->workroom_id == workroom_id)
+            {
+                if (!first)
+                    out += ",";
+                out += taskToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string tasksToJsonByAssignee(string assignee_id)
+    {
+        string out = "[";
+        Task *bantu = headTask;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->assignee_id == assignee_id)
+            {
+                if (!first)
+                    out += ",";
+                out += taskToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string opportunityTreeToJson(OpportunityTree *root)
+    {
+        if (root == NULL)
+            return "[]";
+
+        string left = opportunityTreeToJson(root->left);
+        string right = opportunityTreeToJson(root->right);
+
+        string current = string("{") +
+                         "\"id\":" + helper::quote(root->data.id) + "," +
+                         "\"title\":" + helper::quote(root->data.title) + "," +
+                         "\"reward\":" + helper::quote(root->data.reward) + "," +
+                         "\"type\":" + helper::quote(root->data.type) + "," +
+                         "\"status\":" + helper::quote(root->data.status) +
+                         "}";
+
+        if (left == "[]")
+            left = "";
+        if (right == "[]")
+            right = "";
+
+        string out = "[";
+        bool first = true;
+
+        auto appendItem = [&](const string &item)
+        {
+            if (item == "")
+                return;
+            if (!first)
+                out += ",";
+            out += item;
+            first = false;
+        };
+
+        if (left.size() > 2)
+        {
+            string inner = left.substr(1, left.size() - 2);
+            if (inner != "")
+            {
+                appendItem(inner);
+            }
+        }
+
+        appendItem(current);
+
+        if (right.size() > 2)
+        {
+            string inner = right.substr(1, right.size() - 2);
+            if (inner != "")
+            {
+                if (!first)
+                    out += ",";
+                out += inner;
+                first = false;
+            }
+        }
+
+        out += "]";
+        return out;
+    }
+
+    string graphToJson()
+    {
+        string out = "[";
+        GraphNode *node = headGraph;
+        bool firstNode = true;
+
+        while (node != NULL)
+        {
+            if (!firstNode)
+                out += ",";
+
+            out += string("{") +
+                   "\"id_user\":" + helper::quote(node->id_user) + "," +
+                   "\"name\":" + helper::quote(node->name) + "," +
+                   "\"role_title\":" + helper::quote(node->role_title) + "," +
+                   "\"edges\":[";
+
+            GraphEdge *e = node->edges;
+            bool firstEdge = true;
+            while (e != NULL)
+            {
+                if (!firstEdge)
+                    out += ",";
+                out += helper::quote(e->id_user);
+                firstEdge = false;
+                e = e->next;
+            }
+
+            out += "]}";
+            firstNode = false;
+            node = node->next;
+        }
+
+        out += "]";
+        return out;
+    }
+
+    // 18. GRAPH
 
     GraphNode *findGraphNode(string id)
     {
@@ -1747,6 +1948,28 @@ namespace data
         int count = 0;
         dfsVisit(start, visited, count);
         cout << "NULL" << endl;
+    }
+
+    string opportunitiesToJsonByCreator(string creator_id)
+    {
+        string out = "[";
+        Opportunity *bantu = headOpportunity;
+        bool first = true;
+
+        while (bantu != NULL)
+        {
+            if (bantu->creator_id == creator_id)
+            {
+                if (!first)
+                    out += ",";
+                out += opportunityToJson(*bantu);
+                first = false;
+            }
+            bantu = bantu->next;
+        }
+
+        out += "]";
+        return out;
     }
 
 }
