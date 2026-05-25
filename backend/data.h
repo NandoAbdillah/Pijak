@@ -135,8 +135,8 @@ namespace data
     extern Activity *topActivity;
 
     extern OpportunityTree *rootOpportunity;
-    extern UserHashNode *userHashTable[MAX_HASH];
 
+    extern UserHashNode *userHashTable[MAX_HASH];
     extern UserHashNode *authHashTable[MAX_HASH];
 
     extern GraphNode *headGraph;
