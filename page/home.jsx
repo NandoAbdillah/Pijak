@@ -181,7 +181,8 @@ const HeroSection = () => (
       >
         <div className="w-full h-full bg-gray-200 rounded overflow-hidden">
           <img
-            src="https://placehold.co/400x500/E7DCCB/1B1B1B?text=Photography"
+            // src="https://placehold.co/400x500/E7DCCB/1B1B1B?text=Photography"
+            src="https://i.pinimg.com/1200x/2f/a8/56/2fa856cfbd8241f566e7bff55bda9138.jpg"
             alt="Creative"
             className="w-full h-full object-cover"
           />
@@ -205,7 +206,8 @@ const HeroSection = () => (
       >
         <div className="w-full h-full bg-gray-200 rounded overflow-hidden">
           <img
-            src="https://placehold.co/400x500/A8C3A0/1F4D3A?text=Productive+GenZ"
+            // src="https://placehold.co/400x500/A8C3A0/1F4D3A?text=Productive+GenZ"
+            src="https://i.pinimg.com/736x/ea/c4/d4/eac4d47a8b68a90ed71df09d63b5d5a6.jpg"
             alt="Productive"
             className="w-full h-full object-cover"
           />

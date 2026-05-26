@@ -248,7 +248,7 @@ export const JelajahMain = ({ setCurrentPage, setSelectedOppId }) => {
       )}
 
       {/* Bottom Banner */}
-      <FadeUp
+      {/* <FadeUp
         delay={0.4}
         className="mt-10 bg-[#E7F0E9] rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between border border-[#A8C3A0]/30 gap-6"
       >
@@ -284,6 +284,7 @@ export const JelajahMain = ({ setCurrentPage, setSelectedOppId }) => {
           Lihat Aktivitas Saya <ArrowRight size={16} className="ml-2" />
         </Button>
       </FadeUp>
+     */}
     </div>
   );
 };
