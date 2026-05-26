@@ -129,11 +129,17 @@ export default function App() {
       />
     );
   }
+  const doLogout = () => {
+    return () => {
+      setGlobalUser(null);
+      setCurrentPage("auth");
+    };
+  };
 
   return (
     <div className="flex h-screen w-full bg-[#F6F3EA] overflow-hidden text-[#1B1B1B] font-inter">
       {/* Left Sidebar */}
-      <LeftSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <LeftSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} setOnLogout={doLogout()} />
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
