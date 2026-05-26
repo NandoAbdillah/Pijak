@@ -32,8 +32,6 @@ const NAV_ITEMS = [
   { id: "profil", icon: User, label: "Profil" },
 ];
 
-
-
 const CATEGORIES = [
   {
     icon: Palette,
@@ -131,11 +129,10 @@ export const Topbar = () => (
   </header>
 );
 
-
 /**
  * @param {{ currentPage: string, setCurrentPage: (page: string) => void }} props
  */
-export const LeftSidebar = ({ currentPage, setCurrentPage }) => (
+export const LeftSidebar = ({ currentPage, setCurrentPage, setOnLogout }) => (
   <aside className="w-[260px] h-screen sticky top-0 bg-[#FCFBF8] border-r border-[#DDD6C8] flex flex-col pt-8 pb-6 px-5 z-20 flex-shrink-0">
     <div className="flex items-center gap-3 px-3 mb-2">
       <div className="w-8 h-8 bg-[#1F4D3A] rounded-lg flex items-center justify-center text-white font-bold font-sora text-xl rounded-tl-sm rounded-br-3xl">
@@ -218,6 +215,49 @@ export const LeftSidebar = ({ currentPage, setCurrentPage }) => (
             </Button>
           </div>
         </>
+      ) : currentPage === "profil" ? (
+        <>
+          <div className="bg-white border border-[#DDD6C8] rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Badge className="bg-[#E7F0E9] text-[#1F4D3A] p-1">
+                <Map size={14} />
+              </Badge>
+              <span className="text-xs font-semibold text-[#1B1B1B]">
+                Level 3 - Kreator Muda
+              </span>
+            </div>
+            <div className="w-full bg-[#F6F3EA] rounded-full h-1.5 mb-2">
+              <div
+                className="bg-[#5F8B6D] h-1.5 rounded-full"
+                style={{ width: "64%" }}
+              ></div>
+            </div>
+            <div className="text-[10px] text-[#6E6E6E] text-right">
+              320 / 500 XP
+            </div>
+          </div>
+
+          <div className="bg-[#1F4D3A] rounded-2xl p-4 text-white relative overflow-hidden">
+            <Sparkles className="absolute top-3 right-3 text-[#5F8B6D] opacity-50 w-12 h-12" />
+            <h4 className="font-sora font-semibold text-sm mb-2 relative z-10 leading-snug">
+              &quot;Kecilkan langkah,
+              <br />
+              besarkan dampak.&quot;
+            </h4>
+            <p className="text-[10px] text-white/80 relative z-10">
+              Setiap karya kecilmu
+              <br />
+              berarti untuk dunia.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4 bg-white/10 text-white border-white/20 hover:bg-white/20 w-full text-xs py-2"
+              onClick={setOnLogout}
+            >
+              Logout Akun
+            </Button>
+          </div>
+        </>
       ) : (
         <div className="px-2">
           <h4 className="text-xs font-sora font-bold text-[#1B1B1B] mb-3">
@@ -242,7 +282,6 @@ export const LeftSidebar = ({ currentPage, setCurrentPage }) => (
     </div>
   </aside>
 );
-
 
 export const RightSidebar = () => (
   <aside className="w-[320px] h-screen sticky top-0 bg-[#FCFBF8] border-l border-[#DDD6C8] flex flex-col py-8 px-6 z-20 flex-shrink-0 overflow-y-auto hide-scrollbar">
