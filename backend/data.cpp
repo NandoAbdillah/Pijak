@@ -198,6 +198,7 @@ namespace data
         clearUserHash();
     }
 
+    
     // 2. COUNT
 
     int countUsers()
@@ -590,8 +591,7 @@ namespace data
         return out;
     }
 
-    // 7. LOAD & SAVE ACTIVITY STACK
-
+    // 7. LOAD 
     bool loadAllUsers()
     {
         clearUsers();
@@ -1486,7 +1486,7 @@ namespace data
             {
                 if (rewardToInt(bantu->reward) < rewardToInt(bantu->next->reward))
                 {
-                    // Pointer swap yang benar pada Linked List
+                    // Pointer swap yang da Linked List
                     Opportunity *nextNode = bantu->next;
                     bantu->next = nextNode->next;
                     nextNode->next = bantu;
@@ -1617,7 +1617,6 @@ namespace data
         cout << root->data.id << " | " << root->data.title << " | " << root->data.reward << endl;
         showOpportunityTree(root->right);
     }
-
 
     string proposalsToJsonByApplicant(string applicant_id)
     {
